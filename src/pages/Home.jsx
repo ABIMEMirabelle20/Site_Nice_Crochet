@@ -46,11 +46,12 @@ export default function Home({ goTo }) {
           <div className="hero-visual-bg"></div>
           <div className="hero-visual-pattern"></div>
           <div className="hero-visual">
-  <img
-    src={heroImage}
-    alt="Nice Crochet"
-    className="hero-image"
-  />
+            <img
+  src={heroImage}
+  alt="Nice Crochet"
+  className="hero-image"
+/>
+  
 </div>
         </div>
         <div className="hero-scroll">Scroll</div>

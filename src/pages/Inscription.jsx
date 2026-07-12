@@ -79,9 +79,9 @@ export default function Inscription({ goTo, formation, showToast }) {
           <div className="form-group"><label>Quartier / Ville *</label><input type="text" placeholder="Ex: Cotonou, Calavi, Porto-Novo..." value={ville} onChange={(e) => setVille(e.target.value)} /></div>
 
           <h2 style={{ marginTop: '2rem' }}>Votre niveau & disponibilité</h2>
-          <div className="form-group">
-            <label>Votre niveau actuel en crochet</label>
-            <div className="radio-group">
+          <div className="form-group section-radio">
+  <label>Votre niveau actuel en crochet</label>
+  <div className="radio-group">
               {['Débutant absolu — je n\'ai jamais fait de crochet', 'J\'ai quelques bases, je veux progresser', 'Intermédiaire — je maîtrise les points de base', 'Avancé — je cherche à me perfectionner'].map((opt) => (
                 <label className="radio-opt" key={opt}>
                   <input type="radio" name="niveau" checked={niveau === opt} onChange={() => setNiveau(opt)} /> {opt}
@@ -89,9 +89,9 @@ export default function Inscription({ goTo, formation, showToast }) {
               ))}
             </div>
           </div>
-          <div className="form-group">
-            <label>Mode de suivi souhaité</label>
-            <div className="radio-group">
+          <div className="form-group section-radio">
+  <label>Mode de suivi souhaité</label>
+  <div className="radio-group">
               {['En présentiel à Cotonou', 'En ligne (WhatsApp / vidéo)', 'Les deux selon les semaines'].map((opt) => (
                 <label className="radio-opt" key={opt}>
                   <input type="radio" name="mode" checked={mode === opt} onChange={() => setMode(opt)} /> {opt}
