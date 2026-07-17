@@ -606,6 +606,25 @@ footer{background:var(--chocolate);padding:3rem clamp(1.5rem,6vw,5rem) 2rem}
   transition: all .25s ease;
 }
 
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem;
+    align-items: start;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    display: flex;
+    align-items: flex-end;
+    min-height: 48px;
+    margin-bottom: .6rem;
+}
+
 /* Récapitulatif commander */
 .order-recap{background:var(--chocolate);padding:2rem;align-self:start;position:sticky;top:90px}
 .order-recap h3{font-family:var(--ff-display);font-size:1.2rem;color:var(--gold);margin-bottom:1.5rem;padding-bottom:.7rem;border-bottom:1px solid rgba(212,169,74,.2)}
