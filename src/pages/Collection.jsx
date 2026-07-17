@@ -10,7 +10,7 @@ const FILTERS = [
   { key: 'ensembles', label: 'Ensembles' },
 ];
 
-export default function Collection({ goTo }) {
+export default function Collection({ goTo, showToast, addToCart, cartCount = 0 }) {
   const [cat, setCat] = useState('all');
   const [fading, setFading] = useState(false);
 
@@ -22,6 +22,20 @@ export default function Collection({ goTo }) {
       setCat(key);
       setFading(false);
     }, 200);
+  };
+
+  const handleAddToCart = (item) => {
+    addToCart({
+      id: `${item.name}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      name: item.name,
+      emoji: item.emoji,
+      price: item.price,
+      taille: '',
+      couleur: '',
+      couleurAutre: '',
+      notes: '',
+    });
+    showToast(`${item.name} ajouté au panier`);
   };
 
   return (
@@ -46,6 +60,13 @@ export default function Collection({ goTo }) {
 
       <BackButton label="Retour à l'accueil" onClick={() => goTo('accueil')} />
 
+      <div className="back-wrap" style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '.5rem' }}>
+        <button className="btn" onClick={() => goTo('commander')}>
+          <span>Voir mon panier{cartCount > 0 ? ` (${cartCount})` : ''}</span>
+          <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+        </button>
+      </div>
+
       <div className="collection-grid" id="collectionGrid" style={{ opacity: fading ? 0 : 1 }}>
         {items.map((item, i) => (
           <div className="product-card" key={i}>
@@ -58,7 +79,7 @@ export default function Collection({ goTo }) {
               <p>{item.desc}</p>
               <div className="product-price">{item.price}</div>
             </div>
-            <button className="product-card-btn" onClick={() => goTo('commander')}>Commander cette pièce →</button>
+            <button className="product-card-btn" onClick={() => handleAddToCart(item)}>Commander cette pièce →</button>
           </div>
         ))}
       </div>

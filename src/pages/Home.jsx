@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { FooterFull } from '../components/Footer';
-import heroImage from "../ressources/photo9.jpg";
+import heroImage from "../ressources/photo14.jpg";
 
 const tickerItems = [
   'Fait main avec amour', 'Séries limitées', 'Marque béninoise',
@@ -32,7 +32,7 @@ export default function Home({ goTo }) {
       <section className="hero">
         <div className="hero-content">
           <div className="hero-eyebrow">Artisanat béninois · Édition limitée</div>
-          <h1>Bienvenue chez<br /><em>Nice Crochet</em></h1>
+          <h1>Bienvenue chez<br /><em>Nice Création</em></h1>
           <p className="hero-desc">
             Un univers de passion, d'élégance et de savoir-faire. Nos pièces sont <strong>100% faites main</strong>,
             en séries limitées, avec des matières soigneusement sélectionnées.
@@ -43,17 +43,14 @@ export default function Home({ goTo }) {
           </button>
         </div>
         <div className="hero-visual">
-          <div className="hero-visual-bg"></div>
-          <div className="hero-visual-pattern"></div>
-          <div className="hero-visual">
-            <img
-  src={heroImage}
-  alt="Nice Crochet"
-  className="hero-image"
-/>
-  
+  <div className="hero-visual-bg"></div>
+  <div className="hero-visual-pattern"></div>
+  <img
+    src={heroImage}
+    alt="Nice Crochet"
+    className="hero-image"
+  />
 </div>
-        </div>
         <div className="hero-scroll">Scroll</div>
       </section>
 

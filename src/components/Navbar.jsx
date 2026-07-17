@@ -32,7 +32,7 @@ export default function Navbar({ page, goTo }) {
     <img src={logo} alt="Nice Crochet" />
 </div>
           <div>
-            <div className="nav-brand-text">Nice Crochet</div>
+            <div className="nav-brand-text">Nice Création</div>
             <div className="nav-brand-sub">Fait main · Chic · Durable</div>
           </div>
         </div>

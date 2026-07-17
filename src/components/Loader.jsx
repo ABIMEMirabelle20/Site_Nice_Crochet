@@ -10,7 +10,7 @@ export default function Loader() {
 
   return (
     <div id="loader" className={hidden ? 'hidden' : ''}>
-      <div className="loader-brand">Nice Crochet</div>
+      <div className="loader-brand">Nice Création</div>
       <div className="loader-bar"></div>
     </div>
   );
