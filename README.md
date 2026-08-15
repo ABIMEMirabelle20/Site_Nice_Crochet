@@ -1,11 +1,11 @@
-# Site Nice Crochet 🧶
+# Site Nice Création 🧶
 
-Une plateforme web moderne dédiée à Nice Crochet, permettant de présenter les formations, les collections de vêtements au crochet et les services proposés.
+Une plateforme web moderne dédiée à Nice Création, permettant de présenter les formations, les collections de vêtements au crochet; divers accessoires  et les services proposés.
 
 ## ✨ Fonctionnalités
 
 - Page d'accueil
-- Présentation de Nice Crochet
+- Présentation de Nice Création
 - Catalogue des formations
 - Collection de produits
 - Détails des formations
@@ -69,7 +69,7 @@ Le projet peut être déployé sur :
 
 **ABIME Mirabelle**
 
-Étudiante en Informatique | Développeuse Web
+Étudiante en Informatique | Développeuse Front-end
 
 ## 📄 Licence
 
