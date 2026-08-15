@@ -163,7 +163,7 @@ nav.scrolled{box-shadow:0 4px 40px rgba(61,36,23,.08)}
 /* SECTION */
 .section{padding:clamp(4rem,10vw,8rem) clamp(1.5rem,6vw,5rem);max-width:1400px;margin:0 auto}
 .section-label{font-size:.68rem;letter-spacing:.4em;text-transform:uppercase;color:var(--terracotta);margin-bottom:.8rem;display:flex;align-items:center;gap:.6rem}
-.section-label::before{content:'✦';font-size:.5rem}
+
 .section-title{font-family:var(--ff-display);font-size:clamp(2rem,5vw,3.5rem);font-weight:300;line-height:1.2;color:var(--chocolate);margin-bottom:1rem}
 .section-title em{font-style:italic;color:var(--chocolate-light)}
 .section-divider{width:60px;height:1px;background:var(--terracotta);margin-bottom:1.5rem}
@@ -655,7 +655,9 @@ footer{background:var(--chocolate);padding:3rem clamp(1.5rem,6vw,5rem) 2rem}
 
 /* ═════ RESPONSIVE — portables, tablettes, mobiles ═════ */
 @media(max-width:1024px){
-  .hero{grid-template-columns:1fr;min-height:auto}
+  .hero{grid-template-columns:1fr; min-height:auto;      
+    height:auto;          
+    overflow:visible;   min-height:auto}
  .hero-visual{
     min-height:450px;
 }
