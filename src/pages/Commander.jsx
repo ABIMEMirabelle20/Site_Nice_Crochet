@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import BackButton from '../components/BackButton';
-import PaymentProofModal from '../components/PaymentProofModal';
 import { swatches, WHATSAPP_NUMBER } from '../data';
 import './DepositCard.css';
 
-// À REMPLACER par vos informations Mobile Money réelles
-const DEPOSIT_PHONE_NUMBER = '+229 90 61 43 96';
-const BENEFICIARY_NAME = 'Nice Crochet';
+// URL de votre backend (voir .env / variables Vercel : VITE_API_URL, VITE_FEDAPAY_PUBLIC_KEY)
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const FEDAPAY_PUBLIC_KEY = import.meta.env.VITE_FEDAPAY_PUBLIC_KEY || '';
 
 function parsePrice(price) {
   if (typeof price === 'number') return price;
@@ -25,35 +24,122 @@ export default function Commander({ goTo, showToast, cart, updateCartItem, remov
   const [adresseLivraison, setAdresseLivraison] = useState('');
   const [contactFin, setContactFin] = useState('');
 
-  // Déclaration de paiement (aucun backend pour le moment)
-  const [modalOpen, setModalOpen] = useState(false);
-  const [proof, setProof] = useState(null); // objet retourné par PaymentProofModal une fois validé
-  const [copied, setCopied] = useState(false);
+  // Paiement de l'acompte via FedaPay (le mini-backend confirme réellement le dépôt)
+  const [depositStatus, setDepositStatus] = useState('idle'); // idle | creating | paying | checking | confirmed | error
+  const [depositInfo, setDepositInfo] = useState(null); // { montant, reference, mode, confirmedAt }
+  const [orderId, setOrderId] = useState(null);
 
   const total = cart.reduce((sum, item) => sum + parsePrice(item.price), 0);
   const acompte = Math.round(total * 0.5);
   const isLivraisonDomicile = livraison === 'Livraison à domicile';
-  const depositDeclared = Boolean(proof);
+  const depositDeclared = depositStatus === 'confirmed';
 
   let step = 1;
   if (cart.length > 0) step = 2;
   if (cart.length > 0 && nom && tel) step = 3;
   if (depositDeclared) step = 4;
 
-  const handleCopyNumber = async () => {
+  const pollOrderStatus = async (id, attempt = 0) => {
     try {
-      await navigator.clipboard.writeText(DEPOSIT_PHONE_NUMBER);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      const res = await fetch(`${API_URL}/api/orders/${id}/status`);
+      const data = await res.json();
+
+      if (data.statutPaiement === 'approuve') {
+        setDepositInfo({
+          montant: data.montant,
+          reference: data.reference,
+          mode: data.mode,
+          confirmedAt: data.confirmedAt,
+        });
+        setDepositStatus('confirmed');
+        showToast('Paiement confirmé par notre système ✅');
+        return;
+      }
+
+      if (data.statutPaiement === 'refuse' || data.statutPaiement === 'annule') {
+        setDepositStatus('error');
+        showToast('Le paiement a été refusé ou annulé. Veuillez réessayer.');
+        return;
+      }
+
+      if (attempt < 10) {
+        setTimeout(() => pollOrderStatus(id, attempt + 1), 2500);
+      } else {
+        setDepositStatus('error');
+        showToast("Vérification en cours côté serveur. Réessayez dans un instant ou contactez-nous si le montant a bien été débité.");
+      }
     } catch {
-      showToast('Impossible de copier automatiquement. Copiez le numéro manuellement.');
+      setDepositStatus('error');
+      showToast('Impossible de vérifier le paiement pour le moment. Réessayez.');
     }
   };
 
-  const handleProofConfirmed = (proofData) => {
-    setProof(proofData);
-    setModalOpen(false);
-    showToast('Paiement déclaré. Vous pouvez valider votre commande.');
+  const handleFedaPayComplete = (resp) => {
+    const FedaPay = window.FedaPay;
+    if (FedaPay && resp.reason === FedaPay.DIALOG_DISMISSED) {
+      setDepositStatus('idle');
+      showToast('Paiement annulé.');
+      return;
+    }
+    // On ne fait jamais confiance au seul retour du widget : on vérifie
+    // toujours côté backend (webhook FedaPay) avant de valider le dépôt.
+    setDepositStatus('checking');
+    pollOrderStatus(orderId ?? resp?.transaction?.custom_metadata?.orderId);
+  };
+
+  const handlePayDeposit = async () => {
+    if (!window.FedaPay) {
+      showToast("Le module de paiement n'a pas pu se charger. Rechargez la page et réessayez.");
+      return;
+    }
+    if (acompte <= 0) return;
+
+    setDepositStatus('creating');
+    try {
+      const res = await fetch(`${API_URL}/api/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client: { nom, tel, ville, livraison, adresseLivraison, contactFin },
+          items: cart.map((item) => ({
+            name: item.name,
+            taille: item.taille,
+            couleur: item.couleur === 'Autre' ? item.couleurAutre : item.couleur,
+            notes: item.notes || '',
+            prix: parsePrice(item.price),
+          })),
+          total,
+          acompte,
+        }),
+      });
+
+      if (!res.ok) throw new Error('order_create_failed');
+      const data = await res.json();
+      setOrderId(data.orderId);
+      setDepositStatus('paying');
+
+      const [firstname, ...rest] = nom.trim().split(' ');
+      const widget = window.FedaPay.init({
+        public_key: FEDAPAY_PUBLIC_KEY,
+        transaction: {
+          amount: acompte,
+          description: `Acompte commande Nice Crochet #${data.orderId}`,
+          custom_metadata: { orderId: data.orderId },
+        },
+        currency: { iso: 'XOF' },
+        customer: {
+          firstname: firstname || 'Client',
+          lastname: rest.join(' ') || '-',
+          email: `client-${tel.replace(/\D/g, '')}@nice-crochet.local`,
+          phone_number: { number: tel.replace(/\D/g, ''), country: 'bj' },
+        },
+        onComplete: handleFedaPayComplete,
+      });
+      widget.open();
+    } catch {
+      setDepositStatus('error');
+      showToast("Impossible de lancer le paiement. Vérifiez votre connexion et réessayez.");
+    }
   };
 
   const validate = () => {
@@ -75,7 +161,7 @@ export default function Commander({ goTo, showToast, cart, updateCartItem, remov
       return;
     }
     if (!depositDeclared) {
-      showToast("Veuillez déclarer votre paiement de l'acompte avant de valider votre commande");
+      showToast("Veuillez régler l'acompte avant de valider votre commande");
       return;
     }
 
@@ -101,8 +187,7 @@ ${lignes}
 
 — Total : ${total > 0 ? `${total.toLocaleString()} FCFA` : 'à définir ensemble'}
 — Acompte (50%) : ${total > 0 ? `${acompte.toLocaleString()} FCFA` : 'à définir'}
-— Paiement déclaré par ${proof.nomPrenom} (numéro ${proof.numeroPaiement}) le ${proof.datePaiement} vers ${proof.heureApprox}${proof.reference ? `, réf. ${proof.reference}` : ''}
-— Capture de preuve : ${proof.fileName} (à joindre manuellement dans cette conversation)
+— Acompte payé et confirmé par FedaPay ✅ (réf. ${depositInfo?.reference || orderId}, via ${depositInfo?.mode || 'Mobile Money'})
 
 — Nom : ${nom}
 — Téléphone : ${tel}
@@ -110,8 +195,16 @@ ${lignes}
 — Livraison : ${livraisonDetails}`;
 
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
-    showToast("N'oubliez pas de joindre votre capture d'écran dans la conversation WhatsApp.");
+    showToast('Commande envoyée sur WhatsApp !');
   };
+
+  const depositButtonLabel = {
+    idle: "Payer l'acompte via Mobile Money",
+    creating: 'Préparation du paiement…',
+    paying: 'Paiement en cours…',
+    checking: 'Vérification du paiement…',
+    error: 'Réessayer le paiement',
+  }[depositStatus] || "Payer l'acompte via Mobile Money";
 
   return (
     <div className="page active" id="page-commander">
@@ -166,22 +259,30 @@ ${lignes}
                     </div>
                     <div className="form-group">
                       <label>Précisions (optionnel)</label>
-                      <input type="text" placeholder="Longueur, modèle vu sur nos réseaux..." value={item.notes} onChange={(e) => updateCartItem(item.id, { notes: e.target.value })} />
+                      <input
+                        type="text"
+                        placeholder="Détails, ajustements..."
+                        value={item.notes || ''}
+                        onChange={(e) => updateCartItem(item.id, { notes: e.target.value })}
+                      />
                     </div>
                   </div>
 
                   <div className="form-group">
-                    <label>Couleur (si possible)</label>
-                    <div className="color-swatches">
-                      {swatches.map((s) => (
-                        <div
-                          className={`swatch ${item.couleur === s.name ? 'selected' : ''}`}
-                          key={s.name}
-                          onClick={() => updateCartItem(item.id, { couleur: s.name })}
-                        >
-                          <div className="swatch-circle" style={{ background: s.color, border: s.border ? '1px solid #ddd' : 'none' }}></div>
-                          <div className="swatch-label">{s.name}</div>
-                        </div>
+                    <label>Couleur</label>
+                    <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
+                      {swatches.map((sw) => (
+                        <button
+                          key={sw.name}
+                          type="button"
+                          title={sw.name}
+                          onClick={() => updateCartItem(item.id, { couleur: sw.name })}
+                          style={{
+                            width: 28, height: 28, borderRadius: '50%', background: sw.color,
+                            border: item.couleur === sw.name ? '2px solid var(--terracotta)' : sw.border ? '1px solid #ccc' : '1px solid transparent',
+                            cursor: 'pointer',
+                          }}
+                        />
                       ))}
                     </div>
                     <input
@@ -237,35 +338,19 @@ ${lignes}
                   <div className="deposit-card-label">Montant à verser</div>
                   <div className="deposit-card-amount">{total > 0 ? `${acompte.toLocaleString()} FCFA` : '—'}</div>
 
-                  <div className="deposit-card-row">
-                    <div>
-                      <div className="deposit-card-row-label">Numéro Mobile Money</div>
-                      <div className="deposit-card-row-value">{DEPOSIT_PHONE_NUMBER}</div>
-                    </div>
-                    <button type="button" className="deposit-copy-btn" onClick={handleCopyNumber}>
-                      {copied ? 'Copié ✓' : 'Copier le numéro'}
-                    </button>
-                  </div>
-
-                  <div className="deposit-card-row">
-                    <div>
-                      <div className="deposit-card-row-label">Bénéficiaire</div>
-                      <div className="deposit-card-row-value">{BENEFICIARY_NAME}</div>
-                    </div>
-                  </div>
-
                   <p className="deposit-card-help">
-                    Effectuez le transfert MTN ou Moov Money vers ce numéro, puis déclarez votre paiement ci-dessous.
+                    Paiement sécurisé par MTN Mobile Money, Moov Money ou carte bancaire.
+                    Le paiement est vérifié automatiquement par notre système, aucune capture d'écran n'est nécessaire.
                   </p>
 
                   <button
                     type="button"
                     className="btn btn-fill"
                     style={{ width: '100%', justifyContent: 'center', padding: '1.1rem' }}
-                    onClick={() => setModalOpen(true)}
-                    disabled={acompte <= 0}
+                    onClick={handlePayDeposit}
+                    disabled={acompte <= 0 || ['creating', 'paying', 'checking'].includes(depositStatus)}
                   >
-                    <span>J'ai effectué le dépôt</span>
+                    <span>{depositButtonLabel}</span>
                   </button>
                 </div>
               ) : (
@@ -276,12 +361,11 @@ ${lignes}
                     </svg>
                   </div>
                   <div>
-                    <div className="deposit-confirmed-title">Paiement déclaré</div>
+                    <div className="deposit-confirmed-title">Paiement confirmé</div>
                     <div className="deposit-confirmed-sub">
-                      {proof.montantEnvoye ? `${Number(proof.montantEnvoye).toLocaleString()} FCFA` : ''} envoyé le {proof.datePaiement} vers {proof.heureApprox}
+                      {depositInfo?.montant ? `${Number(depositInfo.montant).toLocaleString()} FCFA` : ''} reçu et vérifié par notre système
                     </div>
                   </div>
-                  <button type="button" className="deposit-confirmed-edit" onClick={() => setModalOpen(true)}>Modifier</button>
                 </div>
               )}
             </div>
@@ -301,7 +385,7 @@ ${lignes}
               <p style={{ fontSize: '.75rem', color: 'var(--muted)', marginTop: '.8rem', textAlign: 'center' }}>
                 {depositDeclared
                   ? "Votre commande sera envoyée sur WhatsApp avec le détail de votre paiement."
-                  : "Déclarez votre paiement de l'acompte pour activer la validation."}
+                  : "Réglez l'acompte pour activer la validation."}
               </p>
             </>
           )}
@@ -324,29 +408,20 @@ ${lignes}
             <div className="acompte-box-label">Acompte requis (50%)</div>
             <div className="acompte-amount">{total > 0 ? `${acompte.toLocaleString()} FCFA` : '—'}</div>
             <div className="acompte-detail">
-              {depositDeclared ? 'Paiement déclaré ✅' : 'Obligatoire pour réserver votre panier'}
+              {depositDeclared ? 'Paiement confirmé ✅' : 'Obligatoire pour réserver votre panier'}
             </div>
           </div>
 
           <div className="recap-contact">
             <strong>Paiement via</strong>
-            MTN Mobile Money · Moov Money
+            MTN Mobile Money · Moov Money · Carte bancaire
             <br /><br />
             <strong>Nous contacter</strong>
-            <a href="https://wa.me//22990614396" target="_blank" rel="noreferrer">+229 90614396</a>
+            <a href="https://wa.me//2290159871071" target="_blank" rel="noreferrer">+229 0159871071</a>
             <br />Réponse sous 24h · Livraison partout au Bénin
           </div>
         </div>
       </div>
-
-      <PaymentProofModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onConfirm={handleProofConfirmed}
-        montantAttendu={acompte}
-        defaultNom={nom}
-        defaultTel={tel}
-      />
     </div>
   );
 }
