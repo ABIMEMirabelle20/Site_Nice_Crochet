@@ -9,7 +9,7 @@ export function FooterFull({ goTo }) {
             <a href="https://www.facebook.com/share/19QgBjfC1H/" className="social-btn" target="_blank" rel="noreferrer">fb</a>
             <a href="https://www.instagram.com/nice.creation1?igsh=Z3AxdHhsaHE4Mjdv" className="social-btn" target="_blank" rel="noreferrer">ig</a>
             <a href="https://www.tiktok.com/@nicecrochet0?_r=1&_t=ZS-97t2LsEUaTF" className="social-btn" target="_blank" rel="noreferrer">tk</a>
-            <a href="https://wa.me//22990614396" className="social-btn" target="_blank" rel="noreferrer">wa</a>
+            <a href="https://wa.me//2290159871071" className="social-btn" target="_blank" rel="noreferrer">wa</a>
           </div>
         </div>
         <div className="footer-col">
@@ -25,7 +25,7 @@ export function FooterFull({ goTo }) {
         <div className="footer-col">
           <h4>Contact</h4>
           <ul>
-            <li><a href="https://wa.me//22990614396">WhatsApp</a></li>
+            <li><a href="https://wa.me//2290159871071">WhatsApp</a></li>
             <li><a href="https://www.instagram.com/nice.creation1?igsh=Z3AxdHhsaHE4Mjdv">Instagram</a></li>
             <li><a href="#">Cotonou, Bénin</a></li>
           </ul>

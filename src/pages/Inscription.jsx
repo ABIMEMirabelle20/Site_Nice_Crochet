@@ -143,7 +143,7 @@ export default function Inscription({ goTo, formation, showToast }) {
             <h3>Une question ?</h3>
             <div className="recap-contact">
               <strong>Nous contacter</strong>
-              Écrivez-nous directement sur <a href="https://wa.me//22990614396" target="_blank" rel="noreferrer">WhatsApp</a> ou sur Instagram <a href="https://www.instagram.com/nice.creation1?igsh=Z3AxdHhsaHE4Mjdv" target="_blank" rel="noreferrer">@NiceCréation</a>.<br /><br />
+              Écrivez-nous directement sur <a href="https://wa.me//2290159871071" target="_blank" rel="noreferrer">WhatsApp</a> ou sur Instagram <a href="https://www.instagram.com/nice.creation1?igsh=Z3AxdHhsaHE4Mjdv" target="_blank" rel="noreferrer">@NiceCréation</a>.<br /><br />
               Nous répondons 7j/7 entre 8h et 20h.
             </div>
           </div>
