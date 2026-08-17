@@ -7,6 +7,12 @@ import './DepositCard.css';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 const FEDAPAY_PUBLIC_KEY = import.meta.env.VITE_FEDAPAY_PUBLIC_KEY || '';
 
+const DELAIS = [
+  { id: 'standard', label: 'Délai standard (7 à 14 jours)', majoration: 0, note: 'Inclus dans le prix affiché' },
+  { id: 'urgent', label: 'Urgent (3 à 5 jours)', majoration: 0.15, note: '+15% — travail accéléré' },
+  { id: 'tres-urgent', label: 'Très urgent (24 à 48h)', majoration: 0.30, note: '+30% — veilles et heures supplémentaires' },
+];
+
 function parsePrice(price) {
   if (typeof price === 'number') return price;
   if (typeof price === 'string') {
@@ -23,13 +29,17 @@ export default function Commander({ goTo, showToast, cart, updateCartItem, remov
   const [livraison, setLivraison] = useState('Remise en main propre à Cotonou');
   const [adresseLivraison, setAdresseLivraison] = useState('');
   const [contactFin, setContactFin] = useState('');
+  const [delaiId, setDelaiId] = useState('standard');
 
   // Paiement de l'acompte via FedaPay (le mini-backend confirme réellement le dépôt)
   const [depositStatus, setDepositStatus] = useState('idle'); // idle | creating | paying | checking | confirmed | error
   const [depositInfo, setDepositInfo] = useState(null); // { montant, reference, mode, confirmedAt }
   const [orderId, setOrderId] = useState(null);
 
-  const total = cart.reduce((sum, item) => sum + parsePrice(item.price), 0);
+  const sousTotal = cart.reduce((sum, item) => sum + parsePrice(item.price), 0);
+  const delaiChoisi = DELAIS.find((d) => d.id === delaiId) || DELAIS[0];
+  const majoration = Math.round(sousTotal * delaiChoisi.majoration);
+  const total = sousTotal + majoration;
   const acompte = Math.round(total * 0.5);
   const isLivraisonDomicile = livraison === 'Livraison à domicile';
   const depositDeclared = depositStatus === 'confirmed';
@@ -108,6 +118,8 @@ export default function Commander({ goTo, showToast, cart, updateCartItem, remov
             notes: item.notes || '',
             prix: parsePrice(item.price),
           })),
+          delai: delaiChoisi.label,
+          majoration,
           total,
           acompte,
         }),
@@ -185,6 +197,8 @@ export default function Commander({ goTo, showToast, cart, updateCartItem, remov
 
 ${lignes}
 
+— Sous-total pièces : ${sousTotal > 0 ? `${sousTotal.toLocaleString()} FCFA` : 'à définir ensemble'}
+— Délai souhaité : ${delaiChoisi.label}${majoration > 0 ? ` (majoration +${majoration.toLocaleString()} FCFA incluse)` : ''}
 — Total : ${total > 0 ? `${total.toLocaleString()} FCFA` : 'à définir ensemble'}
 — Acompte (50%) : ${total > 0 ? `${acompte.toLocaleString()} FCFA` : 'à définir'}
 — Acompte payé et confirmé par FedaPay ✅ (réf. ${depositInfo?.reference || orderId}, via ${depositInfo?.mode || 'Mobile Money'})
@@ -326,6 +340,21 @@ ${lignes}
                   </div>
                 </div>
               )}
+
+              <div className="form-group">
+                <label>Délai de livraison souhaité</label>
+                <div className="radio-group">
+                  {DELAIS.map((d) => (
+                    <label key={d.id} className="radio-opt">
+                      <input type="radio" name="delai" checked={delaiId === d.id} onChange={() => setDelaiId(d.id)} />
+                      {' '}{d.label}{d.majoration > 0 ? ` (${d.note})` : ''}
+                    </label>
+                  ))}
+                </div>
+                <p className="deposit-card-help" style={{ marginTop: '.6rem' }}>
+                  Un délai court demande à notre couturière de travailler en heures supplémentaires ou en veillée pour respecter votre échéance — c'est pourquoi une commande urgente coûte plus cher que le prix affiché. Merci de ne choisir « urgent » que si c'est réellement nécessaire.
+                </p>
+              </div>
             </div>
           )}
 
@@ -401,6 +430,9 @@ ${lignes}
                 <span>{parsePrice(item.price) > 0 ? `${parsePrice(item.price).toLocaleString()} FCFA` : 'à définir'}</span>
               </div>
             ))}
+            {majoration > 0 && (
+              <div className="recap-row"><span>Majoration délai ({delaiChoisi.label})</span><span>+{majoration.toLocaleString()} FCFA</span></div>
+            )}
             <div className="recap-row recap-total"><span>Total</span><span>{total > 0 ? `${total.toLocaleString()} FCFA` : '—'}</span></div>
           </div>
 
