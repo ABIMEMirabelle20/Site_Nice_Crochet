@@ -352,7 +352,7 @@ ${lignes}
                   ))}
                 </div>
                 <p className="deposit-card-help" style={{ marginTop: '.6rem' }}>
-                  Un délai court demande à notre couturière de travailler en heures supplémentaires ou en veillée pour respecter votre échéance — c'est pourquoi une commande urgente coûte plus cher que le prix affiché. Merci de ne choisir « urgent » que si c'est réellement nécessaire.
+                  Un délai court demande à notre crocheteuse de travailler en heures supplémentaires ou en veillée pour respecter votre échéance — c'est pourquoi une commande urgente coûte plus cher que le prix affiché. Merci de ne choisir « urgent » que si c'est réellement nécessaire.
                 </p>
               </div>
             </div>
