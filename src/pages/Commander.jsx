@@ -1920,7 +1920,7 @@ ${paiementPart}
 
             Réponse sous 24h ·
             Livraison partout au
-            Bénin
+            Bénin et ailleurs.
 
           </div>
 

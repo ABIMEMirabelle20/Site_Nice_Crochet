@@ -1,3 +1,30 @@
+/* ═════ BASE RESPONSIVE ═════ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img {
+  max-width: 100%;
+}
+
+
+/* ═════ VARIABLES ═════ */
+
+:root {
+  --chocolate: #3b2117;
+  --chocolate-light: #6b4435;
+  --terracotta: #b8664e;
+  /* ... tes autres variables */
+}
 :root {
   /* ===== NOUVELLE PALETTE : terracotta / crème / brun chocolat / or doux ===== */
   --cream:#F7EEE0;         /* crème */
@@ -357,6 +384,7 @@ footer{background:var(--chocolate);padding:3rem clamp(1.5rem,6vw,5rem) 2rem}
     object-fit:cover;
     display:block;
 }
+
 .about-visual-pattern{position:absolute;inset:0;opacity:.3;background-image:repeating-linear-gradient(45deg,rgba(247,238,224,.1) 0px,rgba(247,238,224,.1) 1px,transparent 1px,transparent 12px)}
 .about-visual-label{position:absolute;bottom:-1rem;left:-1rem;background:var(--chocolate);color:var(--cream);padding:1rem 1.5rem;font-family:var(--ff-display);font-size:1rem;font-style:italic}
 .about-visual-deco{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:8rem;opacity:.3;color:var(--cream)}
@@ -667,83 +695,296 @@ footer{background:var(--chocolate);padding:3rem clamp(1.5rem,6vw,5rem) 2rem}
 .toast{position:fixed;bottom:2rem;right:2rem;background:var(--chocolate);color:var(--cream);padding:1rem 1.5rem;z-index:999;transform:translateY(100px);opacity:0;transition:all .4s var(--ease);font-size:.85rem;letter-spacing:.05em;max-width:320px;border-left:3px solid var(--terracotta)}
 .toast.show{transform:translateY(0);opacity:1}
 
-/* ═════ RESPONSIVE — portables, tablettes, mobiles ═════ */
-@media(max-width:1024px){
-  .hero{grid-template-columns:1fr; min-height:auto;      
-    height:auto;          
-    overflow:visible;   min-height:auto}
- .hero-visual{
-    min-height:450px;
+/* ═════ RESPONSIVE — tablettes, iPad, Surface, mobiles ═════ */
+
+/* ───────────────
+   Écrans intermédiaires
+   iPad / Surface Pro / petites tablettes
+   ─────────────── */
+
+@media (max-width: 1100px) {
+
+  /* NAVIGATION */
+
+  .nav {
+    padding-left: 1.2rem;
+    padding-right: 1.2rem;
+  }
+
+  .nav-links {
+    gap: 1rem;
+  }
+
+  .nav-links a {
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+  }
+
+  /* HERO */
+
+  .hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    height: auto;
+    overflow: visible;
+  }
+
+  .hero-visual {
+    min-height: 450px;
+  }
+
+  /* ABOUT */
+
+  .about-body {
+    grid-template-columns: 1fr;
+  }
+
+  .about-visual {
+    width: 100%;
+  }
+
+  .about-visual-frame {
+    width: 100%;
+  }
+
+  .hero-visual img,
+  .about-visual-frame img,
+  .about-visual-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* WHY */
+
+  .why-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .why-card {
+    border-right: none;
+    border-bottom: 1px solid rgba(212, 169, 74, 0.15);
+  }
+
+  /* PRODUITS */
+
+  .products-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* ÉTAPES */
+
+  .steps-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .step:nth-child(2) {
+    border-right: none;
+  }
+
+  .step:nth-child(3) {
+    border-top: 1px solid rgba(212, 169, 74, 0.2);
+  }
+
+  /* FORMATIONS */
+
+  .formations-grid-new {
+    grid-template-columns: 1fr;
+  }
+
+  /* FOOTER */
+
+  .footer-inner {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .footer-brand {
+    grid-column: 1 / -1;
+  }
+
+  /* COMMANDE */
+
+  .order-main {
+    grid-template-columns: 1fr;
+  }
+
+  .order-recap {
+    position: static;
+  }
+
+  .order-steps-bar {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .order-steps-inner {
+    min-width: 500px;
+  }
+
+  /* INSCRIPTION */
+
+  .inscr-body {
+    grid-template-columns: 1fr;
+    padding-bottom: 3rem;
+  }
 }
 
-.about-visual{
-    width:100%;
+
+/* ───────────────
+   Tablettes portrait
+   iPad / Surface Pro
+   ─────────────── */
+
+@media (max-width: 900px) {
+
+  /* NAVIGATION
+     On passe au menu hamburger avant que
+     les liens ne débordent.
+  */
+
+  .nav-links {
+    display: none;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  .nav {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* HERO */
+
+  .hero-visual {
+    min-height: 400px;
+  }
+
+  /* COLLECTION */
+
+  .collection-hero {
+    gap: 1.5rem;
+  }
+
+  /* ABOUT */
+
+  .about-body {
+    grid-template-columns: 1fr;
+  }
+
+  .about-visual-frame {
+    width: 100%;
+  }
+
+  /* FORMULAIRES */
+
+  .form-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* PANIER */
+
+  .order-main {
+    grid-template-columns: 1fr;
+  }
+
+  .order-recap {
+    position: static;
+  }
 }
 
-.hero-visual img,
-.about-visual-frame img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-}
-  
-  .why-grid{grid-template-columns:1fr}
-  .why-card{border-right:none;border-bottom:1px solid rgba(212,169,74,.15)}
-  .products-grid{grid-template-columns:repeat(2,1fr)}
-  .steps-grid{grid-template-columns:repeat(2,1fr)}
-  .step:nth-child(2){border-right:none}
-  .step:nth-child(3){border-top:1px solid rgba(212,169,74,.2)}
-  .formations-grid-new{grid-template-columns:1fr}
-  .about-body{grid-template-columns:1fr}
-  
-  .footer-inner{grid-template-columns:1fr 1fr}
-  .footer-brand{grid-column:1/-1}
-  .order-main{grid-template-columns:1fr}
-  .order-recap{position:static}
-  .inscr-body{grid-template-columns:1fr}
-  
-  
-  .order-steps-bar{overflow-x:auto}
-  .order-steps-inner{min-width:500px}
-  .inscr-body{padding-bottom:3rem}
-}
-@media(max-width:640px){
-  .products-grid{grid-template-columns:1fr}
-  .steps-grid{grid-template-columns:1fr}
-  .step{border-right:none;border-bottom:1px solid rgba(212,169,74,.2)}
-  .collection-hero{flex-direction:column;align-items:flex-start}
-  .footer-inner{grid-template-columns:1fr}
-  .footer-bottom{flex-direction:column;gap:.5rem;text-align:center}
-  .form-row{grid-template-columns:1fr}
-  .about-values{grid-template-columns:1fr}
-  .piece-selector{grid-template-columns:1fr}
-  .inscr-resume{flex-direction:column}
-  .testimonial-card{flex:0 0 100%}
-   .nav-links{
-        display:none;
-    }
 
-    .hamburger{
-        display:flex;
-    }
-     .hero-visual{
-        min-height:350px;
-    }
+/* ───────────────
+   Smartphones
+   ─────────────── */
 
-    .about-visual-frame{
-        aspect-ratio:1/1;
-    }
-     
-}
+@media (max-width: 640px) {
 
-@media (max-width:768px){
+  /* NAV */
 
-    .nav-links{
-        display:none;
-    }
+  .nav {
+    padding-left: 0.8rem;
+    padding-right: 0.8rem;
+  }
 
-    .hamburger{
-        display:flex;
-    }
+  /* PRODUITS */
 
+  .products-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* ÉTAPES */
+
+  .steps-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .step {
+    border-right: none;
+    border-bottom: 1px solid rgba(212, 169, 74, 0.2);
+  }
+
+  /* COLLECTION */
+
+  .collection-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* FOOTER */
+
+  .footer-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  /* FORMULAIRES */
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  /* ABOUT */
+
+  .about-values {
+    grid-template-columns: 1fr;
+  }
+
+  .about-visual-frame {
+    aspect-ratio: 1 / 1;
+  }
+
+  /* INSCRIPTION */
+
+  .piece-selector {
+    grid-template-columns: 1fr;
+  }
+
+  .inscr-resume {
+    flex-direction: column;
+  }
+
+  /* TÉMOIGNAGES */
+
+  .testimonial-card {
+    flex: 0 0 100%;
+  }
+
+  /* HERO */
+
+  .hero-visual {
+    min-height: 350px;
+  }
+
+  /* ÉTAPES COMMANDE */
+
+  .order-steps-inner {
+    min-width: 460px;
+  }
 }
