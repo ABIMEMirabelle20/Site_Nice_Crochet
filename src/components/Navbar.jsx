@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import logo from "../ressources/logo.jpg";
+import logo from "../ressources/Logo.jpeg";
 
 const LINKS = [
   { id: 'accueil', label: 'Accueil' },
