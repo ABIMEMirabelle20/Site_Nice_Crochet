@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import BackButton from '../components/BackButton';
 import { swatches, WHATSAPP_NUMBER } from '../data';
 import './DepositCard.css';
 
-// URL de votre backend (voir .env / variables Vercel : VITE_API_URL, VITE_FEDAPAY_PUBLIC_KEY)
+// URL de votre backend (voir .env / variables Vercel : VITE_API_URL, VITE_KKIAPAY_PUBLIC_KEY)
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
-const FEDAPAY_PUBLIC_KEY = import.meta.env.VITE_FEDAPAY_PUBLIC_KEY || '';
+const KKIAPAY_PUBLIC_KEY = import.meta.env.VITE_KKIAPAY_PUBLIC_KEY || '';
+const KKIAPAY_SANDBOX = import.meta.env.VITE_KKIAPAY_SANDBOX === 'true';
 
 const DELAIS = [
   { id: 'standard', label: 'Délai standard (7 à 14 jours)', majoration: 0, note: 'Inclus dans le prix affiché' },
@@ -31,10 +32,11 @@ export default function Commander({ goTo, showToast, cart, updateCartItem, remov
   const [contactFin, setContactFin] = useState('');
   const [delaiId, setDelaiId] = useState('standard');
 
-  // Paiement de l'acompte via FedaPay (le mini-backend confirme réellement le dépôt)
+  // Paiement de l'acompte via Kkiapay (le mini-backend vérifie réellement le dépôt)
   const [depositStatus, setDepositStatus] = useState('idle'); // idle | creating | paying | checking | confirmed | error
   const [depositInfo, setDepositInfo] = useState(null); // { montant, reference, mode, confirmedAt }
   const [orderId, setOrderId] = useState(null);
+  const orderIdRef = useRef(null); // évite les closures obsolètes dans le listener Kkiapay
 
   const sousTotal = cart.reduce((sum, item) => sum + parsePrice(item.price), 0);
   const delaiChoisi = DELAIS.find((d) => d.id === delaiId) || DELAIS[0];
@@ -72,8 +74,8 @@ export default function Commander({ goTo, showToast, cart, updateCartItem, remov
         return;
       }
 
-      if (attempt < 10) {
-        setTimeout(() => pollOrderStatus(id, attempt + 1), 2500);
+      if (attempt < 6) {
+        setTimeout(() => pollOrderStatus(id, attempt + 1), 2000);
       } else {
         setDepositStatus('error');
         showToast("Vérification en cours côté serveur. Réessayez dans un instant ou contactez-nous si le montant a bien été débité.");
@@ -84,21 +86,37 @@ export default function Commander({ goTo, showToast, cart, updateCartItem, remov
     }
   };
 
-  const handleFedaPayComplete = (resp) => {
-    const FedaPay = window.FedaPay;
-    if (FedaPay && resp.reason === FedaPay.DIALOG_DISMISSED) {
-      setDepositStatus('idle');
-      showToast('Paiement annulé.');
-      return;
-    }
-    // On ne fait jamais confiance au seul retour du widget : on vérifie
-    // toujours côté backend (webhook FedaPay) avant de valider le dépôt.
+  // Dès que le widget Kkiapay confirme un succès côté client, on demande
+  // IMMÉDIATEMENT au backend de vérifier la transaction via le SDK serveur
+  // (k.verify) avant de considérer l'acompte comme payé — jamais de confiance
+  // aveugle dans la réponse du widget seule.
+  const verifyOnBackend = async (transactionId) => {
+    const id = orderIdRef.current;
+    if (!id) return;
     setDepositStatus('checking');
-    pollOrderStatus(orderId ?? resp?.transaction?.custom_metadata?.orderId);
+    try {
+      await fetch(`${API_URL}/api/orders/${id}/verify-kkiapay`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transactionId }),
+      });
+    } catch {
+      // on tente quand même le polling ci-dessous : le backend peut avoir
+      // reçu la requête même si la réponse a échoué à revenir
+    }
+    pollOrderStatus(id);
   };
 
+  useEffect(() => {
+    if (!window.addSuccessListener) return;
+    const handler = (response) => {
+      verifyOnBackend(response.transactionId);
+    };
+    window.addSuccessListener(handler);
+  }, []);
+
   const handlePayDeposit = async () => {
-    if (!window.FedaPay) {
+    if (!window.openKkiapayWidget) {
       showToast("Le module de paiement n'a pas pu se charger. Rechargez la page et réessayez.");
       return;
     }
@@ -128,26 +146,17 @@ export default function Commander({ goTo, showToast, cart, updateCartItem, remov
       if (!res.ok) throw new Error('order_create_failed');
       const data = await res.json();
       setOrderId(data.orderId);
+      orderIdRef.current = data.orderId;
       setDepositStatus('paying');
 
-      const [firstname, ...rest] = nom.trim().split(' ');
-      const widget = window.FedaPay.init({
-        public_key: FEDAPAY_PUBLIC_KEY,
-        transaction: {
-          amount: acompte,
-          description: `Acompte commande Nice Crochet #${data.orderId}`,
-          custom_metadata: { orderId: data.orderId },
-        },
-        currency: { iso: 'XOF' },
-        customer: {
-          firstname: firstname || 'Client',
-          lastname: rest.join(' ') || '-',
-          email: `client-${tel.replace(/\D/g, '')}@nice-crochet.local`,
-          phone_number: { number: tel.replace(/\D/g, ''), country: 'bj' },
-        },
-        onComplete: handleFedaPayComplete,
+      window.openKkiapayWidget({
+        amount: acompte,
+        key: KKIAPAY_PUBLIC_KEY,
+        sandbox: KKIAPAY_SANDBOX,
+        position: 'center',
+        reason: `Acompte commande Nice Crochet #${data.orderId}`,
+        data: JSON.stringify({ orderId: data.orderId }),
       });
-      widget.open();
     } catch {
       setDepositStatus('error');
       showToast("Impossible de lancer le paiement. Vérifiez votre connexion et réessayez.");
@@ -201,7 +210,7 @@ ${lignes}
 — Délai souhaité : ${delaiChoisi.label}${majoration > 0 ? ` (majoration +${majoration.toLocaleString()} FCFA incluse)` : ''}
 — Total : ${total > 0 ? `${total.toLocaleString()} FCFA` : 'à définir ensemble'}
 — Acompte (50%) : ${total > 0 ? `${acompte.toLocaleString()} FCFA` : 'à définir'}
-— Acompte payé et confirmé par FedaPay ✅ (réf. ${depositInfo?.reference || orderId}, via ${depositInfo?.mode || 'Mobile Money'})
+— Acompte payé et confirmé par Kkiapay ✅ (réf. ${depositInfo?.reference || orderId}, via ${depositInfo?.mode || 'Mobile Money'})
 
 — Nom : ${nom}
 — Téléphone : ${tel}
@@ -352,7 +361,7 @@ ${lignes}
                   ))}
                 </div>
                 <p className="deposit-card-help" style={{ marginTop: '.6rem' }}>
-                  Un délai court demande à notre crocheteuse de travailler en heures supplémentaires ou en veillée pour respecter votre échéance — c'est pourquoi une commande urgente coûte plus cher que le prix affiché. Merci de ne choisir « urgent » que si c'est réellement nécessaire.
+                  Un délai court demande à notre couturière de travailler en heures supplémentaires ou en veillée pour respecter votre échéance — c'est pourquoi une commande urgente coûte plus cher que le prix affiché. Merci de ne choisir « urgent » que si c'est réellement nécessaire.
                 </p>
               </div>
             </div>
@@ -368,7 +377,7 @@ ${lignes}
                   <div className="deposit-card-amount">{total > 0 ? `${acompte.toLocaleString()} FCFA` : '—'}</div>
 
                   <p className="deposit-card-help">
-                    Paiement sécurisé par MTN Mobile Money, Moov Money ou carte bancaire.
+                    Paiement sécurisé par MTN Mobile Money, Moov Money ou carte bancaire (Kkiapay).
                     Le paiement est vérifié automatiquement par notre système, aucune capture d'écran n'est nécessaire.
                   </p>
 
