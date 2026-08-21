@@ -2,7 +2,7 @@ import BackButton from '../components/BackButton';
 import { FooterSimple } from '../components/Footer';
 import niceCreationImage from '../ressources/photo7.jpg';
 
-export default function About({ goTo }) {
+export default function About({ goTo, goBack }) {
   return (
     <div className="page active" id="page-apropos">
       <div className="about-hero">
@@ -17,7 +17,7 @@ export default function About({ goTo }) {
 
       <BackButton
         label="Retour à l'accueil"
-        onClick={() => goTo('accueil')}
+        onClick={() => goBack('accueil')}
       />
 
       <div className="about-body">

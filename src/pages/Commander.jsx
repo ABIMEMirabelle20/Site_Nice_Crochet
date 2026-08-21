@@ -52,6 +52,7 @@ function parsePrice(price) {
 
 export default function Commander({
   goTo,
+  goBack,
   showToast,
   cart,
   updateCartItem,
@@ -759,7 +760,7 @@ ${livraisonLine}`;
       <BackButton
         label="Continuer mes achats"
         onClick={() =>
-          goTo('collection')
+          goBack('collection')
         }
       />
 

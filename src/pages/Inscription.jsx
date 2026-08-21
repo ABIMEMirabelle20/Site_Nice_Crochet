@@ -2,7 +2,7 @@ import { useState } from 'react';
 import BackButton from '../components/BackButton';
 import { WHATSAPP_NUMBER } from '../data';
 
-export default function Inscription({ goTo, formation, showToast }) {
+export default function Inscription({ goTo, goBack, formation, showToast }) {
   const [prenom, setPrenom] = useState('');
   const [nom, setNom] = useState('');
   const [tel, setTel] = useState('');
@@ -16,7 +16,7 @@ export default function Inscription({ goTo, formation, showToast }) {
   if (!formation) {
     return (
       <div className="page active" id="page-inscription">
-        <BackButton label="Retour aux formations" onClick={() => goTo('formations')} />
+        <BackButton label="Retour aux formations" onClick={() => goBack('formations')} />
         <div style={{ padding: '4rem clamp(1.5rem,6vw,5rem)' }}>
           <p>Veuillez d'abord sélectionner une formation.</p>
         </div>
@@ -56,7 +56,7 @@ export default function Inscription({ goTo, formation, showToast }) {
         </div>
       </div>
 
-      <BackButton label="Retour aux formations" onClick={() => goTo('formations')} />
+      <BackButton label="Retour aux formations" onClick={() => goBack('formations')} />
 
       <div className="inscr-resume">
         <div className="inscr-resume-card"><div className="rc-icon">📚</div><div><div className="rc-label">Formation</div><div className="rc-val">{formation.title}</div></div></div>

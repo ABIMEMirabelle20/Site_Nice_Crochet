@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Loader from './components/Loader';
 import Navbar from './components/Navbar';
 import Toast from './components/Toast';
@@ -24,14 +24,52 @@ export default function App() {
 
   const toastTimeout = useRef(null);
 
+  // Profondeur de navigation interne : permet de savoir si un "vrai"
+  // retour est possible, ou si on est sur la 1ère page vue (arrivée directe).
+  const depthRef = useRef(0);
+
   useReveal([page]);
 
   // =========================
-  // NAVIGATION
+  // HISTORIQUE NAVIGATEUR (bouton Retour physique / Android)
   // =========================
 
-  const goTo = (id) => {
+  useEffect(() => {
+    // Initialise l'entrée d'historique de base au montage de l'app
+    window.history.replaceState({ page: 'accueil', depth: 0 }, '', '');
+
+    const handlePopState = (event) => {
+      const state = event.state;
+
+      if (state && typeof state.depth === 'number') {
+        depthRef.current = state.depth;
+        setPage(state.page);
+        setFormation(state.formation || null);
+      } else {
+        depthRef.current = 0;
+        setPage('accueil');
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // =========================
+  // NAVIGATION (vers l'avant)
+  // =========================
+
+  const goTo = (id, extraState = {}) => {
     setPage(id);
+
+    depthRef.current += 1;
+    window.history.pushState(
+      { page: id, depth: depthRef.current, ...extraState },
+      '',
+      ''
+    );
 
     window.scrollTo({
       top: 0,
@@ -39,19 +77,24 @@ export default function App() {
     });
   };
 
+  // Pour les boutons "Retour" des pages : vrai retour en arrière si possible,
+  // sinon repli raisonnable (ex: arrivée directe depuis un lien externe).
+  const goBack = (fallbackPage = 'accueil') => {
+    if (depthRef.current > 0) {
+      window.history.back();
+    } else {
+      goTo(fallbackPage);
+    }
+  };
+
   // =========================
   // INSCRIPTION FORMATION
   // =========================
 
   const onInscription = (title, niveau, duree, price) => {
-    setFormation({
-      title,
-      niveau,
-      duree,
-      price
-    });
-
-    goTo('inscription');
+    const formationData = { title, niveau, duree, price };
+    setFormation(formationData);
+    goTo('inscription', { formation: formationData });
   };
 
   // =========================
@@ -64,8 +107,6 @@ export default function App() {
         (it) => it.id === item.id
       );
 
-      // Si le produit existe déjà :
-      // on augmente simplement la quantité
       if (existingItem) {
         return prev.map((it) =>
           it.id === item.id
@@ -77,7 +118,6 @@ export default function App() {
         );
       }
 
-      // Sinon on ajoute le produit
       return [
         ...prev,
         {
@@ -88,7 +128,6 @@ export default function App() {
     });
   };
 
-  // Modifier un produit du panier
   const updateCartItem = (id, patch) => {
     setCart((prev) =>
       prev.map((it) =>
@@ -102,7 +141,6 @@ export default function App() {
     );
   };
 
-  // Supprimer un produit du panier
   const removeFromCart = (id) => {
     setCart((prev) =>
       prev.filter((it) => it.id !== id)
@@ -149,7 +187,6 @@ export default function App() {
         show={toast.show}
       />
 
-      {/* ACCUEIL */}
       {page === 'accueil' && (
         <Home
           goTo={goTo}
@@ -157,35 +194,35 @@ export default function App() {
         />
       )}
 
-      {/* À PROPOS */}
       {page === 'apropos' && (
         <About
           goTo={goTo}
+          goBack={goBack}
         />
       )}
 
-      {/* FORMATIONS */}
       {page === 'formations' && (
         <Formations
           goTo={goTo}
+          goBack={goBack}
           onInscription={onInscription}
         />
       )}
 
-      {/* COLLECTION */}
       {page === 'collection' && (
         <Collection
           goTo={goTo}
+          goBack={goBack}
           showToast={showToast}
           addToCart={addToCart}
           cartCount={cart.length}
         />
       )}
 
-      {/* COMMANDER / PANIER */}
       {page === 'commander' && (
         <Commander
           goTo={goTo}
+          goBack={goBack}
           showToast={showToast}
           cart={cart}
           updateCartItem={updateCartItem}
@@ -193,10 +230,10 @@ export default function App() {
         />
       )}
 
-      {/* INSCRIPTION */}
       {page === 'inscription' && (
         <Inscription
           goTo={goTo}
+          goBack={goBack}
           formation={formation}
           showToast={showToast}
         />

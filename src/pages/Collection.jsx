@@ -12,6 +12,7 @@ const FILTERS = [
 
 export default function Collection({
   goTo,
+  goBack,
   showToast,
   addToCart,
   cartCount = 0,
@@ -92,7 +93,7 @@ export default function Collection({
       {/* RETOUR */}
       <BackButton
         label="Retour à l'accueil"
-        onClick={() => goTo('accueil')}
+        onClick={() => goBack('accueil')}
       />
 
       {/* PANIER */}

@@ -2,7 +2,7 @@ import BackButton from '../components/BackButton';
 import { FooterSimple } from '../components/Footer';
 import { formations } from '../data';
 
-export default function Formations({ goTo, onInscription }) {
+export default function Formations({ goTo, goBack, onInscription }) {
   return (
     <div className="page active" id="page-formations">
       <div className="formation-hero">
@@ -11,7 +11,7 @@ export default function Formations({ goTo, onInscription }) {
         <p>Du débutant au niveau avancé — progressez à votre rythme, à Cotonou</p>
       </div>
 
-      <BackButton label="Retour à l'accueil" onClick={() => goTo('accueil')} style={{ background: 'var(--cream)' }} />
+      <BackButton label="Retour à l'accueil" onClick={() => goBack('accueil')} style={{ background: 'var(--cream)' }} />
 
       <div className="formations-container">
         <div className="formations-grid-new">
