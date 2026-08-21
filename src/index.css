@@ -578,6 +578,162 @@ footer{background:var(--chocolate);padding:3rem clamp(1.5rem,6vw,5rem) 2rem}
 
 /* Section steps */
 .order-section{margin-bottom:2rem}
+
+.special-request-card{
+  margin:4rem 0 2rem;
+  position:relative;
+  background:var(--white);
+  border:1px dashed rgba(139,94,60,.4);
+  border-radius:2px;
+  overflow:hidden;
+}
+
+.special-request-card::before{
+  content:'';
+  position:absolute;
+  top:0;
+  left:2rem;
+  right:2rem;
+  height:2px;
+  background-image:repeating-linear-gradient(
+    90deg,
+    var(--terracotta) 0 10px,
+    transparent 10px 20px
+  );
+}
+
+.special-request-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1.3fr) minmax(280px,1fr);
+}
+
+.special-request-content{
+  padding:2.6rem 2.4rem;
+}
+
+.special-request-heading{
+  display:flex;
+  align-items:center;
+  gap:.6rem;
+  margin-bottom:.9rem;
+}
+
+.special-request-heading > span{
+  font-size:1.4rem;
+}
+
+.special-request-heading .section-label{
+  margin:0;
+}
+
+.special-request-content h2{
+  font-family:var(--ff-display);
+  color:var(--chocolate);
+  font-size:1.8rem;
+  line-height:1.25;
+  margin-bottom:1rem;
+}
+
+.special-request-content h2 em{
+  font-style:italic;
+  color:var(--chocolate-light);
+}
+
+.special-request-content p{
+  max-width:460px;
+  color:var(--muted);
+  font-size:.92rem;
+  line-height:1.75;
+  margin-bottom:1.6rem;
+}
+
+.special-request-info{
+  padding:2.6rem 2.2rem;
+  background:rgba(212,169,74,.07);
+  border-left:1px solid rgba(139,94,60,.2);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+.special-request-info-title{
+  font-family:var(--ff-display);
+  font-size:.78rem;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--terracotta);
+  margin-bottom:.9rem;
+}
+
+.special-request-info p{
+  font-size:.85rem;
+  line-height:1.75;
+  color:var(--chocolate);
+  margin-bottom:1rem;
+}
+
+.special-request-info strong{
+  font-size:.85rem;
+  line-height:1.6;
+  color:var(--chocolate);
+  padding-top:.9rem;
+  border-top:1px solid rgba(139,94,60,.2);
+}
+
+.special-request-section{
+  padding:1.5rem;
+  background:var(--white);
+  border:1px solid rgba(212,169,74,.22);
+}
+
+.special-request-section.is-active{
+  border-color:rgba(193,105,74,.45);
+  box-shadow:0 12px 35px rgba(61,36,23,.06);
+}
+
+.special-request-form{
+  animation:specialReveal .25s var(--ease) both;
+}
+
+.special-request-help{
+  color:var(--muted);
+  font-size:.86rem;
+  line-height:1.7;
+  margin-bottom:1.1rem;
+}
+
+.special-request-form textarea{
+  min-height:150px;
+  resize:vertical;
+}
+
+.special-cancel-btn{
+  margin-top:.7rem;
+  color:var(--terracotta);
+  font-size:.75rem;
+  letter-spacing:.08em;
+  text-decoration:underline;
+}
+
+.recap-special{
+  display:flex;
+  flex-direction:column;
+  gap:.25rem;
+  padding:.8rem 0;
+  color:var(--terracotta);
+  font-size:.82rem;
+}
+
+.recap-special span{
+  color:rgba(212,169,74,.6);
+  font-size:.75rem;
+}
+
+@keyframes specialReveal{
+  from{opacity:0;transform:translateY(5px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
 .order-section-title{font-family:var(--ff-display);font-size:1.3rem;color:var(--chocolate);margin-bottom:1.5rem;padding-bottom:.7rem;border-bottom:1px solid rgba(212,169,74,.2);display:flex;align-items:center;gap:.7rem}
 .order-section-title .os-num{width:26px;height:26px;background:var(--chocolate-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--cream);flex-shrink:0}
 
@@ -836,6 +992,14 @@ footer{background:var(--chocolate);padding:3rem clamp(1.5rem,6vw,5rem) 2rem}
    ─────────────── */
 
 @media (max-width: 900px) {
+  .special-request-section{
+    padding:1.25rem;
+  }
+
+  .special-request-section .btn{
+    width:100%;
+    justify-content:center;
+  }
 
   /* NAVIGATION
      On passe au menu hamburger avant que
@@ -986,5 +1150,18 @@ footer{background:var(--chocolate);padding:3rem clamp(1.5rem,6vw,5rem) 2rem}
 
   .order-steps-inner {
     min-width: 460px;
+  }
+}
+@media (max-width:720px){
+  .special-request-grid{grid-template-columns:1fr}
+  .special-request-content,
+  .special-request-info{padding:2rem 1.4rem}
+  .special-request-info{
+    border-left:0;
+    border-top:1px solid rgba(139,94,60,.2);
+  }
+  .special-request-content .btn{
+    width:100%;
+    justify-content:center;
   }
 }

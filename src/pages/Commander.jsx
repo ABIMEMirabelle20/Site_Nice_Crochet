@@ -306,6 +306,31 @@ export default function Commander({
     );
   }, []);
 
+  // Ouverture directe de la zone « création spéciale »
+  // depuis la page Collection.
+  useEffect(() => {
+    const openSpecialRequest = () => {
+      setSpecialRequest(true);
+
+      window.setTimeout(() => {
+        document
+          .getElementById('special-description')
+          ?.focus();
+      }, 120);
+    };
+
+    window.addEventListener(
+      'open-special-request',
+      openSpecialRequest
+    );
+
+    return () =>
+      window.removeEventListener(
+        'open-special-request',
+        openSpecialRequest
+      );
+  }, []);
+
   /* =========================
      PAIEMENT ACOMPTE
   ========================= */
@@ -506,32 +531,32 @@ export default function Commander({
     }
 
     /* =========================
-       LIGNES PANIER
+       MESSAGE WHATSAPP
+       (reconstruit en blocs filtrés
+       pour éviter répétitions et
+       sections vides)
     ========================= */
 
-    const lignes =
+    const piecesPart =
       cart.length > 0
         ? cart
             .map((item, i) => {
               const couleurFinale =
-                item.couleur ===
-                  'Autre' &&
+                item.couleur === 'Autre' &&
                 item.couleurAutre
                   ? item.couleurAutre
                   : item.couleur ||
                     'non précisé';
 
-              const prix =
-                parsePrice(
-                  item.price
-                );
+              const prix = parsePrice(
+                item.price
+              );
 
               return `${i + 1}. ${item.name}
    — Taille : ${item.taille}
    — Couleur : ${couleurFinale}
    — Précisions : ${
-     item.notes ||
-     'aucune'
+     item.notes || 'aucune'
    }
    — Prix : ${
      prix > 0
@@ -540,109 +565,76 @@ export default function Commander({
    }`;
             })
             .join('\n\n')
-        : 'Aucune pièce de la collection';
+        : null;
 
-    /* =========================
-       CRÉATION SPÉCIALE
-    ========================= */
+    const specialPart = specialRequest
+      ? `✨ Création spéciale
+— Description de la création : ${specialDescription}`
+      : null;
 
-    const specialPart =
-      specialRequest
-        ? `
-
-✨ CRÉATION SPÉCIALE / SUR MESURE
-
-Description du projet :
-${specialDescription}
-
-⚠️ Le prix de cette création n'est pas encore fixé.
-Il sera déterminé après étude de la crocheteuse selon l'envergure de la pièce, les matières, la complexité du modèle et le temps nécessaire.
-
-Aucun acompte n'a été demandé à ce stade.
-`
+    const refSuffix =
+      depositInfo?.reference || orderId
+        ? ` (réf : ${
+            depositInfo?.reference ||
+            orderId
+          })`
         : '';
 
-    /* =========================
-       LIVRAISON
-    ========================= */
+    const acompteLine = !specialRequest
+      ? `— Acompte (50%) : ${
+          acompte > 0
+            ? `${acompte.toLocaleString()} FCFA versé via ${
+                depositInfo?.mode ||
+                'Mobile Money'
+              } (numéro : ${tel})${refSuffix}`
+            : 'à définir'
+        }`
+      : null;
 
-    const livraisonDetails =
-      isLivraisonDomicile
-        ? `Livraison à domicile
-   — Adresse : ${adresseLivraison}
-   — Contact à la fin des travaux : ${contactFin}`
-        : 'Remise en main propre à Cotonou';
-
-    /* =========================
-       MESSAGE WHATSAPP
-    ========================= */
-
-    const paiementPart =
-      specialRequest
-        ? `— Paiement : aucun acompte demandé pour la création spéciale`
-        : `— Acompte (50%) : ${
-            total > 0
-              ? `${acompte.toLocaleString()} FCFA`
+    const totauxPart = !specialRequest
+      ? [
+          `— Sous-total : ${
+            sousTotal > 0
+              ? `${sousTotal.toLocaleString()} FCFA`
               : 'à définir'
-          }
-
-— Acompte payé et confirmé par Kkiapay ✅
-   Réf. : ${
-     depositInfo?.reference ||
-     orderId ||
-     'non disponible'
-   }
-   Mode : ${
-     depositInfo?.mode ||
-     'Mobile Money'
-   }`;
-
-    const totalPart =
-      specialRequest
-        ? `— Total : prix à définir après étude`
-        : `— Total : ${
+          }`,
+          `— Délai : ${
+            delaiChoisi.label
+          }${
+            majoration > 0
+              ? ` (majoration +${majoration.toLocaleString()} FCFA)`
+              : ''
+          }`,
+          `— Total : ${
             total > 0
               ? `${total.toLocaleString()} FCFA`
-              : 'à définir ensemble'
-          }`;
+              : 'à définir'
+          }`,
+          acompteLine,
+        ]
+          .filter(Boolean)
+          .join('\n')
+      : null;
 
-    const msg = `Bonjour Nice Crochet ! Je souhaite passer commande 🧶
+    const livraisonLine =
+      isLivraisonDomicile
+        ? `— Livraison à domicile — Adresse : ${adresseLivraison} (contact fin de travaux : ${contactFin})`
+        : `— Livraison : Remise en main propre à Cotonou`;
 
-${specialPart}
-
-📦 PIÈCES DE LA COLLECTION
-
-${lignes}
-
-— Sous-total pièces : ${
-      sousTotal > 0
-        ? `${sousTotal.toLocaleString()} FCFA`
-        : 'à définir ensemble'
-    }
-
-— Délai souhaité : ${
-      delaiChoisi.label
-    }${
-      majoration > 0
-        ? ` (majoration +${majoration.toLocaleString()} FCFA incluse)`
-        : ''
-    }
-
-${totalPart}
-
-${paiementPart}
-
-👤 INFORMATIONS CLIENT
-
-— Nom : ${nom}
+    const clientPart = `— Nom : ${nom}
 — Téléphone : ${tel}
-— Ville : ${
-      ville || 'non précisé'
-    }
+— Ville : ${ville || 'non précisé'}
+${livraisonLine}`;
 
-🚚 LIVRAISON
-
-— ${livraisonDetails}`;
+    const msg = [
+      'Bonjour Nice Crochet ! Je souhaite passer commande 🧶',
+      specialPart,
+      piecesPart,
+      totauxPart,
+      clientPart,
+    ]
+      .filter(Boolean)
+      .join('\n\n');
 
     window.open(
       `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
@@ -1072,173 +1064,74 @@ ${paiementPart}
             })}
           </div>
 
-          {/* =========================
-              CRÉATION SPÉCIALE
-          ========================= */}
-
-          <div className="order-section">
-
+          {/* CRÉATION SPÉCIALE */}
+          <div className={`order-section special-request-section ${
+            specialRequest ? 'is-active' : ''
+          }`}>
             <div className="order-section-title">
-              <div className="os-num">
-                ★
-              </div>
-
+              <div className="os-num">★</div>
               Création spéciale
             </div>
 
             {!specialRequest ? (
-              <div>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => {
+                  setSpecialRequest(true);
 
-                <p
-                  style={{
-                    color:
-                      'var(--muted)',
-                    fontSize:
-                      '.88rem',
-                    lineHeight:
-                      1.7,
-                    marginBottom:
-                      '1rem',
-                  }}
+                  window.setTimeout(() => {
+                    document
+                      .getElementById('special-description')
+                      ?.focus();
+                  }, 120);
+                }}
+              >
+                <span>Décrire une création spéciale</span>
+                <svg
+                  width="16"
+                  height="16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  viewBox="0 0 24 24"
                 >
-                  Vous souhaitez
-                  commander une
-                  pièce unique ou
-                  un modèle qui ne
-                  figure pas dans
-                  notre collection ?
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
+            ) : (
+              <div className="special-request-form">
+                <p className="special-request-help">
+                  Décrivez simplement la pièce souhaitée :
+                  modèle, couleur, dimensions ou inspiration.
                 </p>
 
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={() =>
-                    setSpecialRequest(
-                      true
-                    )
-                  }
-                >
-                  <span>
-                    Demander une
-                    création spéciale →
-                  </span>
-
-                  <svg
-                    width="16"
-                    height="16"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                </button>
-
-              </div>
-            ) : (
-              <div>
-
-                <div
-                  style={{
-                    padding:
-                      '1rem',
-                    marginBottom:
-                      '1.2rem',
-                    background:
-                      'rgba(212,169,74,.08)',
-                    borderLeft:
-                      '3px solid var(--terracotta)',
-                    fontSize:
-                      '.82rem',
-                    lineHeight:
-                      1.7,
-                    color:
-                      'var(--chocolate)',
-                  }}
-                >
-                  <strong>
-                    ✨ Création spéciale activée
-                  </strong>
-
-                  <br />
-                  <br />
-
-                  Cette pièce sera
-                  étudiée par notre
-                  crocheteuse.
-
-                  <br />
-                  <br />
-
-                  Son prix sera fixé
-                  après étude selon
-                  l'envergure de la
-                  pièce, les matières,
-                  la complexité du
-                  modèle et le temps
-                  nécessaire.
-
-                  <br />
-                  <br />
-
-                  <strong>
-                    Aucun acompte ne
-                    sera demandé pour
-                    cette création avant
-                    que son prix soit
-                    défini.
-                  </strong>
-                </div>
-
                 <div className="form-group">
-
-                  <label>
-                    Décrivez votre
-                    projet *
+                  <label htmlFor="special-description">
+                    Votre projet *
                   </label>
 
                   <textarea
+                    id="special-description"
                     rows="6"
-                    placeholder="Type de pièce, modèle, longueur, manches, motifs, couleur, dimensions, inspiration..."
-                    value={
-                      specialDescription
-                    }
+                    placeholder="Ex. Une robe longue au crochet, couleur crème, manches courtes, avec un motif floral..."
+                    value={specialDescription}
                     onChange={(e) =>
-                      setSpecialDescription(
-                        e.target
-                          .value
-                      )
+                      setSpecialDescription(e.target.value)
                     }
                   />
-
                 </div>
 
                 <button
                   type="button"
+                  className="special-cancel-btn"
                   onClick={() => {
-                    setSpecialRequest(
-                      false
-                    );
-                    setSpecialDescription(
-                      ''
-                    );
-                  }}
-                  style={{
-                    marginTop:
-                      '.8rem',
-                    fontSize:
-                      '.75rem',
-                    color:
-                      'var(--terracotta)',
-                    textDecoration:
-                      'underline',
+                    setSpecialRequest(false);
+                    setSpecialDescription('');
                   }}
                 >
-                  Annuler la création
-                  spéciale
+                  Annuler
                 </button>
-
               </div>
             )}
           </div>
@@ -1597,58 +1490,6 @@ ${paiementPart}
             )}
 
           {/* =========================
-              MESSAGE CRÉATION SPÉCIALE
-          ========================= */}
-
-          {specialRequest && (
-            <div
-              className="order-section"
-              style={{
-                background:
-                  'rgba(212,169,74,.06)',
-              }}
-            >
-
-              <div className="order-section-title">
-                <div className="os-num">
-                  3
-                </div>
-
-                Pas d'acompte pour
-                cette demande
-              </div>
-
-              <p
-                style={{
-                  color:
-                    'var(--muted)',
-                  fontSize:
-                    '.88rem',
-                  lineHeight:
-                    1.7,
-                  margin: 0,
-                }}
-              >
-                Votre création spéciale
-                sera d'abord étudiée par
-                notre crocheteuse.
-
-                <br />
-                <br />
-
-                Le prix vous sera communiqué
-                après étude du projet.
-                <strong>
-                  {' '}
-                  Aucun paiement n'est
-                  demandé maintenant.
-                </strong>
-              </p>
-
-            </div>
-          )}
-
-          {/* =========================
               VALIDATION
           ========================= */}
 
@@ -1768,41 +1609,9 @@ ${paiementPart}
             ))}
 
             {specialRequest && (
-              <div
-                className="recap-row"
-                style={{
-                  display:
-                    'block',
-                  padding:
-                    '1rem 0',
-                  color:
-                    'var(--terracotta)',
-                }}
-              >
-                <strong>
-                  ✨ Création spéciale
-                </strong>
-
-                <div
-                  style={{
-                    marginTop:
-                      '.4rem',
-                    fontSize:
-                      '.8rem',
-                    color:
-                      'var(--muted)',
-                    lineHeight:
-                      1.6,
-                  }}
-                >
-                  Prix à définir
-                  après étude.
-
-                  <br />
-
-                  Aucun acompte
-                  demandé à ce stade.
-                </div>
+              <div className="recap-special">
+                <strong>✨ Création spéciale</strong>
+                <span>Prix à définir après étude</span>
               </div>
             )}
 
@@ -1841,25 +1650,9 @@ ${paiementPart}
 
           </div>
 
-          {/* ACOMPTE / CRÉATION SPÉCIALE */}
-          {specialRequest ? (
-            <div className="acompte-box">
+          {/* ACOMPTE */}
+          {!specialRequest && (
 
-              <div className="acompte-box-label">
-                Création spéciale
-              </div>
-
-              <div className="acompte-amount">
-                Prix à définir
-              </div>
-
-              <div className="acompte-detail">
-                Aucun acompte demandé
-                avant étude du projet
-              </div>
-
-            </div>
-          ) : (
             <div className="acompte-box">
 
               <div className="acompte-box-label">

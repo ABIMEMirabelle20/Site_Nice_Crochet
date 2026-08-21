@@ -22,15 +22,25 @@ export default function Collection({
   const items =
     cat === 'all'
       ? collectionItems
-      : collectionItems.filter((i) => i.cat === cat);
+      : collectionItems.filter((item) => item.cat === cat);
 
   const filterCollection = (key) => {
     setFading(true);
 
-    setTimeout(() => {
+    window.setTimeout(() => {
       setCat(key);
       setFading(false);
     }, 200);
+  };
+
+  const openSpecialRequest = () => {
+    goTo('commander');
+
+    // Commander écoute cet événement et ouvre directement
+    // la zone où le client décrit son projet.
+    window.setTimeout(() => {
+      window.dispatchEvent(new Event('open-special-request'));
+    }, 50);
   };
 
   const handleAddToCart = (item) => {
@@ -52,7 +62,6 @@ export default function Collection({
 
   return (
     <div className="page active" id="page-collection">
-
       {/* HERO */}
       <div className="collection-hero">
         <div>
@@ -66,15 +75,15 @@ export default function Collection({
         </div>
 
         <div className="collection-filters">
-          {FILTERS.map((f) => (
+          {FILTERS.map((filter) => (
             <button
-              key={f.key}
+              key={filter.key}
               className={`filter-btn ${
-                cat === f.key ? 'active' : ''
+                cat === filter.key ? 'active' : ''
               }`}
-              onClick={() => filterCollection(f.key)}
+              onClick={() => filterCollection(filter.key)}
             >
-              {f.label}
+              {filter.label}
             </button>
           ))}
         </div>
@@ -126,11 +135,8 @@ export default function Collection({
           transition: 'opacity .2s ease',
         }}
       >
-        {items.map((item, i) => (
-          <div
-            className="product-card"
-            key={i}
-          >
+        {items.map((item, index) => (
+          <div className="product-card" key={index}>
             <div className="product-img-wrap">
               <div className="product-placeholder">
                 {item.emoji}
@@ -139,9 +145,7 @@ export default function Collection({
               {item.badge && (
                 <div
                   className="product-badge"
-                  style={{
-                    background: item.bc,
-                  }}
+                  style={{ background: item.bc }}
                 >
                   {item.badge}
                 </div>
@@ -150,9 +154,7 @@ export default function Collection({
 
             <div className="product-info">
               <h3>{item.name}</h3>
-
               <p>{item.desc}</p>
-
               <div className="product-price">
                 {item.price}
               </div>
@@ -162,105 +164,81 @@ export default function Collection({
               className="product-card-btn"
               onClick={() => handleAddToCart(item)}
             >
-              Commander cette pièce →
+              <span>Commander cette pièce</span>
+
+              <svg
+                width="14"
+                height="14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                viewBox="0 0 24 24"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
             </button>
           </div>
         ))}
       </div>
 
       {/* CRÉATION SPÉCIALE */}
-      <div
-        style={{
-          margin: '3rem 0 2rem',
-          padding: '2rem',
-          border: '1px solid rgba(212,169,74,.35)',
-          background: 'var(--white)',
-          textAlign: 'center',
-        }}
-      >
-        <div className="section-label">
-          Création personnalisée
+      <section className="special-request-card">
+        <div className="special-request-grid">
+          <div className="special-request-content">
+            <div className="special-request-heading">
+              <span aria-hidden="true">🧶</span>
+
+              <div className="section-label">
+                Création sur mesure
+              </div>
+            </div>
+
+            <h2>
+              Une pièce <em>unique</em> en tête ?
+            </h2>
+
+            <p>
+              Vous avez une idée qui ne figure pas dans la
+              collection ? Décrivez-la directement dans votre
+              demande.
+            </p>
+
+            <button
+              className="btn btn-fill"
+              onClick={openSpecialRequest}
+            >
+              <span>Décrire ma création spéciale</span>
+
+              <svg
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                viewBox="0 0 24 24"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="special-request-info">
+            <div className="special-request-info-title">
+              À savoir
+            </div>
+
+            <p>
+              Le prix est défini après étude selon la pièce,
+              les matières, la complexité et le temps de
+              réalisation.
+            </p>
+
+            <strong>
+              Aucun acompte avant l'estimation.
+            </strong>
+          </div>
         </div>
-
-        <h2
-          style={{
-            fontFamily: 'var(--ff-display)',
-            color: 'var(--chocolate)',
-            marginBottom: '.8rem',
-          }}
-        >
-          Une pièce <em>unique</em> en tête ?
-        </h2>
-
-        <p
-          style={{
-            maxWidth: '700px',
-            margin: '0 auto 1.3rem',
-            color: 'var(--muted)',
-            fontSize: '.9rem',
-            lineHeight: 1.7,
-          }}
-        >
-          Vous avez une idée particulière qui ne figure
-          pas dans notre collection ? Décrivez-nous votre
-          projet et notre crocheteuse étudiera votre demande.
-        </p>
-
-        {/* INFORMATION PRIX */}
-        <div
-          style={{
-            maxWidth: '650px',
-            margin: '0 auto 1.5rem',
-            padding: '1rem 1.2rem',
-            background: 'rgba(212,169,74,.08)',
-            borderLeft: '3px solid var(--terracotta)',
-            textAlign: 'left',
-            fontSize: '.82rem',
-            lineHeight: 1.7,
-            color: 'var(--chocolate)',
-          }}
-        >
-          <strong>
-            À savoir concernant le prix
-          </strong>
-
-          <br />
-          <br />
-
-          Le prix d'une création spéciale n'est pas fixé
-          à l'avance. Il sera déterminé après étude de votre
-          projet selon l'envergure de la pièce, les matières,
-          la complexité du modèle et le temps nécessaire à
-          sa réalisation.
-
-          <br />
-          <br />
-
-          <strong>
-            Aucun acompte ne sera demandé avant cette estimation.
-          </strong>
-        </div>
-
-        <button
-          className="btn"
-          onClick={() => goTo('commander')}
-        >
-          <span>
-            Demander une pièce spéciale →
-          </span>
-
-          <svg
-            width="16"
-            height="16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            viewBox="0 0 24 24"
-          >
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </button>
-      </div>
+      </section>
 
       <FooterSimple text="Fait main avec ❤" />
     </div>
