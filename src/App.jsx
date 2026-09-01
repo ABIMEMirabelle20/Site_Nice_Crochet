@@ -4,7 +4,6 @@ import Navbar from './components/Navbar';
 import Toast from './components/Toast';
 
 import Home from './pages/Home';
-import About from './pages/About';
 import Formations from './pages/Formations';
 import Collection from './pages/Collection';
 import Commander from './pages/Commander';
@@ -45,12 +44,18 @@ export default function App() {
         depthRef.current = state.depth;
         setPage(state.page);
         setFormation(state.formation || null);
+
+        if (state.scrollTo) {
+          requestAnimationFrame(() => scrollToId(state.scrollTo));
+        }
       } else {
         depthRef.current = 0;
         setPage('accueil');
       }
 
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (!(state && state.scrollTo)) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -58,10 +63,46 @@ export default function App() {
   }, []);
 
   // =========================
+  // SCROLL VERS UNE SECTION (ex: "À propos" intégrée à la home)
+  // =========================
+
+  const scrollToId = (id) => {
+    const el = document.getElementById(id);
+
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // =========================
   // NAVIGATION (vers l'avant)
   // =========================
 
   const goTo = (id, extraState = {}) => {
+    // "À propos" n'est plus une page à part : c'est une section de la home.
+    if (id === 'apropos') {
+      if (page === 'accueil') {
+        scrollToId('apropos-section');
+        return;
+      }
+
+      setPage('accueil');
+
+      depthRef.current += 1;
+      window.history.pushState(
+        { page: 'accueil', depth: depthRef.current, scrollTo: 'apropos-section' },
+        '',
+        ''
+      );
+
+      // On attend que la home soit rendue avant de scroller.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => scrollToId('apropos-section'));
+      });
+
+      return;
+    }
+
     setPage(id);
 
     depthRef.current += 1;
@@ -191,13 +232,6 @@ export default function App() {
         <Home
           goTo={goTo}
           addToCart={addToCart}
-        />
-      )}
-
-      {page === 'apropos' && (
-        <About
-          goTo={goTo}
-          goBack={goBack}
         />
       )}
 

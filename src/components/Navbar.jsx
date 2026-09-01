@@ -13,16 +13,49 @@ export default function Navbar({ page, goTo }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Sur l'accueil, "À propos" n'est plus une page à part mais une section :
+  // on la surligne quand elle est visible sous la navbar.
+  const [activeSection, setActiveSection] = useState('accueil');
+
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 40);
+
+      if (page !== 'accueil') return;
+
+      const el = document.getElementById('apropos-section');
+
+      if (!el) {
+        setActiveSection('accueil');
+        return;
+      }
+
+      const rect = el.getBoundingClientRect();
+      const navOffset = 110; // hauteur navbar + marge
+
+      const isInSection = rect.top <= navOffset && rect.bottom > navOffset;
+
+      setActiveSection(isInSection ? 'apropos' : 'accueil');
+    };
+
     window.addEventListener('scroll', onScroll);
+    onScroll();
+
     return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  }, [page]);
+
+  useEffect(() => {
+    if (page !== 'accueil') {
+      setActiveSection(page);
+    }
+  }, [page]);
 
   const handleNav = (id) => {
     goTo(id);
     setMobileOpen(false);
   };
+
+  const isActive = (id) => activeSection === id;
 
   return (
     <>
@@ -41,7 +74,7 @@ export default function Navbar({ page, goTo }) {
             <li key={l.id}>
               <a
                 href="#"
-                className={page === l.id ? 'active' : ''}
+                className={isActive(l.id) ? 'active' : ''}
                 onClick={(e) => { e.preventDefault(); handleNav(l.id); }}
               >
                 {l.label}
