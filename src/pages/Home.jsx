@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import { FooterFull } from '../components/Footer';
 import heroImage from "../ressources/photo14.jpg";
 import storyImage from "../ressources/photo7.jpg";
@@ -31,6 +32,24 @@ const testimonialsData = [
   },
 ];
 
+const reveal = {
+  hidden: { opacity: 0, y: 32 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] }
+  }
+};
+
+const revealLeft = {
+  hidden: { opacity: 0, x: -36 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] }
+  }
+};
+
 export default function Home({ goTo, addToCart }) {
   const [tIdx, setTIdx] = useState(0);
   const trackRef = useRef(null);
@@ -38,7 +57,6 @@ export default function Home({ goTo, addToCart }) {
   const heroRef = useRef(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
-  // Ajouter un produit au panier puis aller à la page Commander
   const handleAddToCart = (product) => {
     if (!addToCart) {
       console.error("La fonction addToCart n'est pas disponible.");
@@ -57,74 +75,70 @@ export default function Home({ goTo, addToCart }) {
     if (!trackRef.current) return;
 
     const cards = trackRef.current.querySelectorAll('.testimonial-card');
-
     if (!cards.length) return;
 
     const visible = window.innerWidth <= 640 ? 1 : 2;
     const max = Math.max(0, cards.length - visible);
-
-    const next = Math.max(
-      0,
-      Math.min(max, tIdx + dir)
-    );
+    const next = Math.max(0, Math.min(max, tIdx + dir));
 
     setTIdx(next);
-
     trackRef.current.style.transform =
       `translateX(-${next * (cards[0].offsetWidth + 24)}px)`;
   };
 
-  // Micro-parallax du hero au mouvement de la souris (desktop uniquement,
-  // neutre sur mobile/tactile puisqu'aucun mousemove n'y est déclenché)
   const handleHeroMouseMove = (e) => {
-    if (!heroRef.current) return;
+    if (!heroRef.current || window.innerWidth <= 900) return;
+
     const rect = heroRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
     const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+
     setTilt({ x, y });
   };
 
   const handleHeroMouseLeave = () => setTilt({ x: 0, y: 0 });
 
-  const parallax = (factor, rotate = 0) => ({
-    transform: `rotate(${rotate}deg) translate(${(tilt.x * factor * 8).toFixed(1)}px, ${(tilt.y * factor * 8).toFixed(1)}px)`
-  });
-
   return (
     <div className="page active" id="page-accueil">
 
       {/* ================= HERO ÉDITORIAL ================= */}
-
       <section
-        className="hero2"
+        className="hero2 nav-section"
+        data-nav-theme="cream"
+        data-nav-text="dark"
+        data-nav-section-id="accueil"
         ref={heroRef}
         onMouseMove={handleHeroMouseMove}
         onMouseLeave={handleHeroMouseLeave}
       >
-
         <div className="hero2-bgtext" aria-hidden="true">CROCHET</div>
 
         <div className="hero2-grid">
 
-          <div className="hero2-copy">
-
-            <div className="hero2-eyebrow">
-              Atelier créatif · Cotonou, Bénin
-            </div>
-
-            <h1 className="hero2-title">
+          {/* Le nom de la marque arrive volontairement avant la légende. */}
+          <motion.div
+            className="hero2-copy"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.35 }}
+          >
+            <motion.h1 className="hero2-title" variants={reveal}>
               Nice
               <br />
               <em>Création</em>
-            </h1>
+            </motion.h1>
 
-            <p className="hero2-desc">
+            <motion.div className="hero2-eyebrow" variants={reveal}>
+              Atelier créatif · Cotonou, Bénin
+            </motion.div>
+
+            <motion.p className="hero2-desc" variants={reveal}>
               Des pièces en crochet <strong>100% faites main</strong>,
               pensées comme des œuvres uniques — séries limitées,
               matières choisies, finitions impeccables.
-            </p>
+            </motion.p>
 
-            <div className="hero2-cta-row">
+            <motion.div className="hero2-cta-row" variants={reveal}>
               <button
                 className="btn btn-fill"
                 onClick={() => goTo('collection')}
@@ -141,58 +155,76 @@ export default function Home({ goTo, addToCart }) {
               >
                 <span>Notre histoire</span>
               </button>
-            </div>
+            </motion.div>
 
-            <div className="hero2-steps">
+            <motion.div className="hero2-steps" variants={reveal}>
               <span><b>01</b> Choisissez</span>
               <span><b>02</b> Sur mesure</span>
               <span><b>03</b> Livraison</span>
-            </div>
+            </motion.div>
+          </motion.div>
 
-          </div>
-
-          <div className="hero2-visual">
-
+          <motion.div
+            className="hero2-visual"
+            initial={{ opacity: 0, scale: 0.94, y: 24 }}
+            whileInView={{ opacity: 1, scale: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+          >
             <div className="hero2-photo-float">
-              <div
+              <motion.div
                 className="hero2-photo-card"
-                style={parallax(0.6, -3)}
+                animate={{
+                  x: tilt.x * 7,
+                  y: tilt.y * 7,
+                  rotate: -3 + tilt.x * 1.2,
+                }}
+                transition={{ type: 'spring', stiffness: 90, damping: 18, mass: 0.5 }}
               >
-                <img src={heroImage} alt="Nice Crochet" />
-              </div>
+                <img src={heroImage} alt="Création Nice Création" />
+              </motion.div>
             </div>
 
-            <div className="hero2-chip-float hero2-chip-pos-a">
-              <div className="hero2-chip" style={parallax(1.1, 5)}>
+            <motion.div
+              className="hero2-chip-float hero2-chip-pos-a"
+              animate={{ x: tilt.x * 10, y: tilt.y * 8, rotate: 5 }}
+              transition={{ type: 'spring', stiffness: 70, damping: 16 }}
+            >
+              <div className="hero2-chip">
                 <span className="hero2-chip-num">100%</span>
                 <span className="hero2-chip-label">Fait main<br />au Bénin</span>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="hero2-chip-float hero2-chip-pos-b">
-              <div className="hero2-chip hero2-chip-stars" style={parallax(-0.9, -6)}>
+            <motion.div
+              className="hero2-chip-float hero2-chip-pos-b"
+              animate={{ x: tilt.x * -8, y: tilt.y * -6, rotate: -6 }}
+              transition={{ type: 'spring', stiffness: 70, damping: 16 }}
+            >
+              <div className="hero2-chip hero2-chip-stars">
                 <span>★★★★★</span>
                 <span className="hero2-chip-label">Clientes conquises</span>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="hero2-chip-float hero2-chip-pos-c">
-              <div className="hero2-chip hero2-chip-tag" style={parallax(0.8, 4)}>
+            <motion.div
+              className="hero2-chip-float hero2-chip-pos-c"
+              animate={{ x: tilt.x * 6, y: tilt.y * 5, rotate: 4 }}
+              transition={{ type: 'spring', stiffness: 70, damping: 16 }}
+            >
+              <div className="hero2-chip hero2-chip-tag">
                 🧶 Séries limitées
               </div>
-            </div>
-
-          </div>
+            </motion.div>
+          </motion.div>
 
         </div>
 
         <div className="hero-scroll">Scroll</div>
-
       </section>
 
       {/* ================= MARQUEE ================= */}
-
-      <div className="marquee2-wrap">
+      <div className="marquee2-wrap nav-section" data-nav-theme="chocolate" data-nav-text="light" data-nav-section-id="apropos">
         <div className="marquee2">
           <div className="marquee2-track">
             {[...tickerItems, ...tickerItems, ...tickerItems].map((item, i) => (
@@ -205,27 +237,32 @@ export default function Home({ goTo, addToCart }) {
         </div>
       </div>
 
-      {/* ================= NOTRE HISTOIRE (storytelling) ================= */}
-
-      <section className="story" id="apropos-section">
-
+      {/* ================= NOTRE HISTOIRE ================= */}
+      <section className="story nav-section" id="apropos-section" data-nav-theme="chocolate" data-nav-text="light">
         <div className="story-grid">
 
-          <div className="story-bigtext reveal">
+          <motion.div
+            className="story-bigtext"
+            variants={reveal}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.25 }}
+          >
             <span className="story-label">Notre histoire</span>
             <h2>
               Née d'une <em>ambition</em>,
               <br />
               devenue un <em>savoir-faire</em>.
             </h2>
-          </div>
+          </motion.div>
 
-          <div className="story-photo reveal-left">
-            <img src={storyImage} alt="Création artisanale Nice Création" />
-            <div className="story-photo-tag">Artisanat & passion</div>
-          </div>
-
-          <div className="story-text reveal-right">
+          <motion.div
+            className="story-text"
+            variants={reveal}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+          >
             <p>
               <strong>Nice Création</strong> est née d'une ambition simple :
               devenir indépendante en maîtrisant un vrai métier de savoir-faire.
@@ -241,41 +278,60 @@ export default function Home({ goTo, addToCart }) {
               des créations sur-mesure et des formations pour transmettre
               ce savoir-faire béninois. 🧶
             </p>
-          </div>
+          </motion.div>
 
-          <div className="story-stats reveal">
-            <div className="story-stat">
+          <motion.div
+            className="story-photo"
+            variants={revealLeft}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+          >
+            <img src={storyImage} alt="Création artisanale Nice Création" />
+            <div className="story-photo-tag">Artisanat & passion</div>
+          </motion.div>
+
+          <motion.div
+            className="story-stats"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.35 }}
+            variants={{
+              hidden: {},
+              visible: {
+                transition: { staggerChildren: 0.12 }
+              }
+            }}
+          >
+            <motion.div className="story-stat" variants={reveal}>
               <strong>100%</strong>
               <span>Fait main</span>
-            </div>
-            <div className="story-stat">
+            </motion.div>
+            <motion.div className="story-stat" variants={reveal}>
               <strong>3</strong>
               <span>Étapes, zéro stress</span>
-            </div>
-            <div className="story-stat">
+            </motion.div>
+            <motion.div className="story-stat" variants={reveal}>
               <strong>∞</strong>
               <span>Séries limitées</span>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
         </div>
-
       </section>
 
-      {/* ================= CRÉATIONS (bento asymétrique) ================= */}
-
-      <section className="section bento-section">
-
+      {/* ================= CRÉATIONS ================= */}
+      <section className="section bento-section nav-section" data-nav-theme="cream" data-nav-text="dark" data-nav-section-id="collection">
         <div className="section-label">Notre sélection</div>
         <h2 className="section-title">Créations <em>en vogue</em></h2>
         <div className="section-divider"></div>
 
         <div className="bento-grid">
 
-          <div className="bento-card bento-lg reveal">
+          <motion.div className="bento-card bento-lg" whileHover={{ y: -8 }} transition={{ duration: 0.35 }}>
             <div className="bento-media">
               <div className="bento-placeholder">🌿</div>
-              <div className="bento-badge" style={{ background: 'var(--terracotta)' }}>Nouveauté</div>
+              <div className="bento-badge">Nouveauté</div>
             </div>
             <div className="bento-info">
               <h3>Robe Crochet Ivoire</h3>
@@ -284,26 +340,21 @@ export default function Home({ goTo, addToCart }) {
                 <span className="bento-price">15 000 FCFA</span>
                 <button
                   className="bento-btn"
-                  onClick={() =>
-                    handleAddToCart({
-                      id: 'robe-crochet-ivoire',
-                      name: 'Robe Crochet Ivoire',
-                      price: 15000,
-                    })
-                  }
+                  onClick={() => handleAddToCart({
+                    id: 'robe-crochet-ivoire',
+                    name: 'Robe Crochet Ivoire',
+                    price: 15000,
+                  })}
                 >
                   Commander →
                 </button>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="bento-card bento-sm reveal">
-            <div
-              className="bento-media"
-              style={{ background: 'linear-gradient(135deg,var(--terracotta),var(--chocolate-light))' }}
-            >
-              <div className="bento-badge" style={{ background: 'var(--chocolate-light)' }}>Best-seller</div>
+          <motion.div className="bento-card bento-sm" whileHover={{ y: -8 }} transition={{ duration: 0.35 }}>
+            <div className="bento-media bento-media-accent">
+              <div className="bento-badge bento-badge-dark">Best-seller</div>
             </div>
             <div className="bento-info">
               <h3>Top Crochet Élégant</h3>
@@ -312,27 +363,22 @@ export default function Home({ goTo, addToCart }) {
                 <span className="bento-price">8 000 FCFA</span>
                 <button
                   className="bento-btn"
-                  onClick={() =>
-                    handleAddToCart({
-                      id: 'top-crochet-elegant',
-                      name: 'Top Crochet Élégant',
-                      price: 8000,
-                    })
-                  }
+                  onClick={() => handleAddToCart({
+                    id: 'top-crochet-elegant',
+                    name: 'Top Crochet Élégant',
+                    price: 8000,
+                  })}
                 >
                   Commander →
                 </button>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="bento-card bento-md reveal">
-            <div
-              className="bento-media"
-              style={{ background: 'linear-gradient(135deg,var(--chocolate-light),var(--chocolate))' }}
-            >
+          <motion.div className="bento-card bento-md" whileHover={{ y: -8 }} transition={{ duration: 0.35 }}>
+            <div className="bento-media bento-media-dark">
               <div className="bento-placeholder">🎀</div>
-              <div className="bento-badge" style={{ background: 'var(--chocolate)' }}>Édition limitée</div>
+              <div className="bento-badge bento-badge-dark">Édition limitée</div>
             </div>
             <div className="bento-info">
               <h3>Ensemble Deux Pièces</h3>
@@ -341,19 +387,17 @@ export default function Home({ goTo, addToCart }) {
                 <span className="bento-price">20 000 FCFA</span>
                 <button
                   className="bento-btn"
-                  onClick={() =>
-                    handleAddToCart({
-                      id: 'ensemble-deux-pieces',
-                      name: 'Ensemble Deux Pièces',
-                      price: 20000,
-                    })
-                  }
+                  onClick={() => handleAddToCart({
+                    id: 'ensemble-deux-pieces',
+                    name: 'Ensemble Deux Pièces',
+                    price: 20000,
+                  })}
                 >
                   Commander →
                 </button>
               </div>
             </div>
-          </div>
+          </motion.div>
 
         </div>
 
@@ -362,17 +406,14 @@ export default function Home({ goTo, addToCart }) {
             <span>Voir toute la collection</span>
           </button>
         </div>
-
       </section>
 
       {/* ================= CTA FORMATIONS ================= */}
-
-      <section className="formation-cta">
-
+      <section className="formation-cta nav-section" data-nav-theme="terracotta" data-nav-text="light" data-nav-section-id="formations">
         <div className="formation-cta-bg" aria-hidden="true">FORMATION</div>
 
         <div className="formation-cta-inner">
-          <span className="section-label" style={{ justifyContent: 'center', color: 'var(--chocolate)' }}>
+          <span className="section-label formation-label">
             Apprenez le crochet
           </span>
 
@@ -390,13 +431,10 @@ export default function Home({ goTo, addToCart }) {
             </svg>
           </button>
         </div>
-
       </section>
 
-      {/* ================= TEMOIGNAGES ================= */}
-
-      <div className="section">
-
+      {/* ================= TÉMOIGNAGES ================= */}
+      <div className="section nav-section" data-nav-theme="cream" data-nav-text="dark">
         <div className="section-label">Elles nous font confiance</div>
         <h2 className="section-title">Ce qu'elles <em>disent</em></h2>
         <div className="section-divider"></div>
@@ -418,12 +456,12 @@ export default function Home({ goTo, addToCart }) {
           <button className="t-btn" onClick={() => slide(-1)}>←</button>
           <button className="t-btn" onClick={() => slide(1)}>→</button>
         </div>
-
       </div>
 
       {/* ================= FOOTER ================= */}
-
-      <FooterFull goTo={goTo} />
+      <div className="nav-section" data-nav-theme="chocolate" data-nav-text="light">
+        <FooterFull goTo={goTo} />
+      </div>
 
     </div>
   );
