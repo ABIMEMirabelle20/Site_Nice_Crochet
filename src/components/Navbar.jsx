@@ -9,7 +9,12 @@ const LINKS = [
   { id: 'commander', label: 'Commander' },
 ];
 
-export default function Navbar({ page, goTo }) {
+// Sur mobile, "Commander" est remplacé par une icône panier à côté du
+// hamburger : on ne l'affiche donc plus dans le menu déroulant mobile,
+// pour éviter le doublon.
+const MOBILE_LINKS = LINKS.filter((l) => l.id !== 'commander');
+
+export default function Navbar({ page, goTo, cartCount = 0, onCartClick }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('accueil');
@@ -55,6 +60,15 @@ export default function Navbar({ page, goTo }) {
     goTo(id);
   };
 
+  const handleCartClick = () => {
+    if (onCartClick) {
+      onCartClick();
+    } else {
+      // Repli si le panier latéral n'est pas encore branché depuis App.jsx.
+      goTo('commander');
+    }
+  };
+
   const isActive = (id) => activeSection === id;
 
   return (
@@ -84,6 +98,21 @@ export default function Navbar({ page, goTo }) {
           ))}
         </ul>
 
+        {/* Icône panier — visible uniquement sur mobile (voir CSS),
+            remplace le lien texte "Commander" à cet endroit. */}
+        <button
+          className="nav-cart-btn"
+          aria-label="Voir mon panier"
+          onClick={handleCartClick}
+        >
+          <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" viewBox="0 0 24 24">
+            <path d="M3 4h2l2.4 12.4a2 2 0 0 0 2 1.6h7.2a2 2 0 0 0 2-1.6L21 8H6" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="9.5" cy="20.5" r="1.4" />
+            <circle cx="17.5" cy="20.5" r="1.4" />
+          </svg>
+          {cartCount > 0 && <span className="nav-cart-badge">{cartCount}</span>}
+        </button>
+
         <div className={`hamburger ${mobileOpen ? 'open' : ''}`} onClick={() => setMobileOpen(!mobileOpen)}>
           <span></span><span></span><span></span>
         </div>
@@ -91,7 +120,7 @@ export default function Navbar({ page, goTo }) {
 
       <div className={`mobile-menu ${mobileOpen ? 'open' : ''}`}>
         <ul>
-          {LINKS.map((l) => (
+          {MOBILE_LINKS.map((l) => (
             <li key={l.id}>
               <a
                 href="#"

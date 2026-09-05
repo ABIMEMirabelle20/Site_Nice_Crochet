@@ -31,6 +31,7 @@ const creations = [
     price: 15000,
     tag: 'Nouveauté',
     emoji: '🌿',
+    material: 'crochet',
   },
   {
     id: 'top-crochet-elegant',
@@ -39,6 +40,7 @@ const creations = [
     price: 8000,
     tag: 'Best-seller',
     emoji: '🎀',
+    material: 'crochet',
   },
   {
     id: 'ensemble-deux-pieces',
@@ -47,14 +49,16 @@ const creations = [
     price: 20000,
     tag: 'Édition limitée',
     emoji: '✨',
+    material: 'crochet',
   },
   {
-    id: 'sac-crochet-raphia',
-    name: 'Sac Crochet Raphia',
-    desc: 'Accessoire tressé main, doublure intérieure cousue',
+    id: 'sac-wax-tresse',
+    name: 'Sac Wax Tressé',
+    desc: 'Tissu wax authentique, doublure intérieure cousue main',
     price: 12000,
     tag: 'Accessoire',
     emoji: '🧺',
+    material: 'wax',
   },
 ];
 
@@ -119,7 +123,14 @@ export default function Home({ goTo, addToCart }) {
       console.error("La fonction addToCart n'est pas disponible.");
       return;
     }
-    addToCart({ ...product, quantity: 1 });
+    addToCart({
+      ...product,
+      taille: '',
+      couleur: '',
+      couleurAutre: '',
+      notes: '',
+      quantity: 1,
+    });
     goTo('commander');
   };
 
@@ -283,10 +294,11 @@ export default function Home({ goTo, addToCart }) {
           variants={staggerContainer}
         >
           {creations.map((c) => (
-            <motion.div className="creation-card" key={c.id} variants={reveal}>
+            <motion.div className={`creation-card mat-${c.material}`} key={c.id} variants={reveal}>
               <div className="creation-media">
                 <span className="creation-emoji">{c.emoji}</span>
               </div>
+              <span className="creation-material">{c.material === 'wax' ? 'Wax' : 'Crochet'}</span>
               <span className="creation-badge">{c.tag}</span>
               <div className="creation-info">
                 <h3>{c.name}</h3>

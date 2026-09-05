@@ -8,6 +8,7 @@ const FILTERS = [
   { key: 'robes', label: 'Robes' },
   { key: 'tops', label: 'Tops' },
   { key: 'ensembles', label: 'Ensembles' },
+  { key: 'sacs', label: 'Sacs' },
 ];
 
 export default function Collection({
@@ -52,6 +53,10 @@ export default function Collection({
       name: item.name,
       emoji: item.emoji,
       price: item.price,
+      cat: item.cat,
+      // Détermine si Commander doit proposer taille/couleur (vêtements
+      // en crochet) ou une commande simple (sacs en wax).
+      material: item.material || (item.cat === 'sacs' ? 'wax' : 'crochet'),
       taille: '',
       couleur: '',
       couleurAutre: '',
@@ -187,8 +192,6 @@ export default function Collection({
         <div className="special-request-grid">
           <div className="special-request-content">
             <div className="special-request-heading">
-              <span aria-hidden="true">🧶</span>
-
               <div className="section-label">
                 Création sur mesure
               </div>
@@ -201,7 +204,8 @@ export default function Collection({
             <p>
               Vous avez une idée qui ne figure pas dans la
               collection ? Décrivez-la directement dans votre
-              demande.
+              demande — vous pourrez aussi joindre une photo
+              d'inspiration.
             </p>
 
             <button
@@ -224,6 +228,7 @@ export default function Collection({
           </div>
 
           <div className="special-request-info">
+            <span className="special-request-icon" aria-hidden="true">🧶</span>
             <div className="special-request-info-title">
               À savoir
             </div>

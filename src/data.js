@@ -1,13 +1,15 @@
 export const collectionItems = [
-  { name:'Robe Bohème', desc:'Style léger et aérien, parfait pour les journées ensoleillées.', price:'15 000 FCFA', cat:'robes', emoji:'🌿', badge:'Exclusif', bc:'var(--chocolate-light)' },
-  { name:'Top Évasé Pastel', desc:"Disponible en plusieurs couleurs pastel, parfait pour l'été.", price:'8 000 FCFA', cat:'tops', emoji:'✦', badge:'Best-seller', bc:'var(--terracotta)' },
-  { name:'Ensemble 2 Pièces', desc:'Tenue élégante et confortable pour toute occasion.', price:'20 000 FCFA', cat:'ensembles', emoji:'🎀', badge:'Édition limitée', bc:'var(--chocolate)' },
-  { name:'Robe Midi Raffinée', desc:'Longueur midi élégante, silhouette affinée et dentelle de mailles.', price:'18 000 FCFA', cat:'robes', emoji:'🌸', badge:'Nouveau', bc:'var(--terracotta)' },
-  { name:'Top Brassière', desc:'Crop top brassière pour un look moderne et estival.', price:'6 000 FCFA', cat:'tops', emoji:'💛', badge:'', bc:'' },
-  { name:'Veste Longue', desc:'Veste longue en crochet ouvert, parfaite sur une robe ou un jean.', price:'14 000 FCFA', cat:'ensembles', emoji:'🤎', badge:'Tendance', bc:'var(--chocolate-light)' },
-  { name:'Robe à Frange', desc:'Franges dansantes pour une allure bohème chic.', price:'17 000 FCFA', cat:'robes', emoji:'✨', badge:'', bc:'' },
-  { name:'Débardeur Filet', desc:'Débardeur léger en crochet filet, tendance et respirant.', price:'7 000 FCFA', cat:'tops', emoji:'🌾', badge:'', bc:'' },
-  { name:'Ensemble Short', desc:'Ensemble short coordonné pour une tenue sport-chic.', price:'16 000 FCFA', cat:'ensembles', emoji:'🎯', badge:'Populaire', bc:'var(--terracotta)' },
+  { name:'Robe Bohème', desc:'Style léger et aérien, parfait pour les journées ensoleillées.', price:'15 000 FCFA', cat:'robes', material:'crochet', emoji:'🌿', badge:'Exclusif', bc:'var(--chocolate-light)' },
+  { name:'Top Évasé Pastel', desc:"Disponible en plusieurs couleurs pastel, parfait pour l'été.", price:'8 000 FCFA', cat:'tops', material:'crochet', emoji:'✦', badge:'Best-seller', bc:'var(--terracotta)' },
+  { name:'Ensemble 2 Pièces', desc:'Tenue élégante et confortable pour toute occasion.', price:'20 000 FCFA', cat:'ensembles', material:'crochet', emoji:'🎀', badge:'Édition limitée', bc:'var(--chocolate)' },
+  { name:'Robe Midi Raffinée', desc:'Longueur midi élégante, silhouette affinée et dentelle de mailles.', price:'18 000 FCFA', cat:'robes', material:'crochet', emoji:'🌸', badge:'Nouveau', bc:'var(--terracotta)' },
+  { name:'Top Brassière', desc:'Crop top brassière pour un look moderne et estival.', price:'6 000 FCFA', cat:'tops', material:'crochet', emoji:'💛', badge:'', bc:'' },
+  { name:'Veste Longue', desc:'Veste longue en crochet ouvert, parfaite sur une robe ou un jean.', price:'14 000 FCFA', cat:'ensembles', material:'crochet', emoji:'🤎', badge:'Tendance', bc:'var(--chocolate-light)' },
+  { name:'Robe à Frange', desc:'Franges dansantes pour une allure bohème chic.', price:'17 000 FCFA', cat:'robes', material:'crochet', emoji:'✨', badge:'', bc:'' },
+  { name:'Débardeur Filet', desc:'Débardeur léger en crochet filet, tendance et respirant.', price:'7 000 FCFA', cat:'tops', material:'crochet', emoji:'🌾', badge:'', bc:'' },
+  { name:'Ensemble Short', desc:'Ensemble short coordonné pour une tenue sport-chic.', price:'16 000 FCFA', cat:'ensembles', material:'crochet', emoji:'🎯', badge:'Populaire', bc:'var(--terracotta)' },
+  { name:'Sac Wax Tressé', desc:'Tissu wax authentique, doublure intérieure cousue main.', price:'12 000 FCFA', cat:'sacs', material:'wax', emoji:'🧺', badge:'Accessoire', bc:'var(--chocolate)' },
+  { name:'Sac Wax Bandoulière', desc:'Format compact, bandoulière réglable, motif wax vif.', price:'10 000 FCFA', cat:'sacs', material:'wax', emoji:'👜', badge:'Nouveau', bc:'var(--terracotta)' },
 ];
 
 export const formations = [
@@ -43,6 +45,8 @@ export const pieces = [
   { name:'Sur mesure', price:0, emoji:'🎨' },
 ];
 
+// Gamme de couleurs élargie — la personne peut toujours indiquer une
+// couleur libre via "Autre" si elle ne trouve pas ce qu'elle cherche.
 export const swatches = [
   { name:'Ivoire', color:'#F5F0E8', border:true },
   { name:'Khaki', color:'#C8B99A' },
@@ -51,6 +55,15 @@ export const swatches = [
   { name:'Noir', color:'#1a1a1a' },
   { name:'Blanc', color:'#fff', border:true },
   { name:'Rose', color:'#E8B4A0' },
+  { name:'Rouge', color:'#B23A3A' },
+  { name:'Terracotta', color:'#C1694A' },
+  { name:'Moutarde', color:'#D4A94A' },
+  { name:'Vert olive', color:'#7C8B4B' },
+  { name:'Bleu marine', color:'#2E3A59' },
+  { name:'Bleu ciel', color:'#A9C6E0' },
+  { name:'Violet', color:'#7B5E7B' },
+  { name:'Bordeaux', color:'#6E2A2A' },
+  { name:'Gris perle', color:'#C9C4BC' },
   { name:'Autre', color:'linear-gradient(135deg,#ff6b6b,#4ecdc4,#95e1d3)' },
 ];
 

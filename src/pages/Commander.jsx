@@ -50,6 +50,13 @@ function parsePrice(price) {
   return 0;
 }
 
+// Un sac (tissu wax) n'a ni taille ni couleur de mailles à choisir :
+// on lui propose une commande simplifiée. Tout le reste (vêtements en
+// crochet) garde le sélecteur taille + couleur.
+function isBagItem(item) {
+  return item.material === 'wax' || item.cat === 'sacs';
+}
+
 export default function Commander({
   goTo,
   goBack,
@@ -75,6 +82,33 @@ export default function Commander({
 
   const [specialDescription, setSpecialDescription] =
     useState('');
+
+  // Photo d'inspiration jointe à la création spéciale. Un lien WhatsApp
+  // (wa.me) ne peut pas transporter de fichier : l'aperçu est local et
+  // le message généré indique clairement qu'il faut joindre la photo
+  // manuellement une fois la conversation WhatsApp ouverte.
+  const [specialImage, setSpecialImage] = useState(null);
+  const [specialImagePreview, setSpecialImagePreview] = useState('');
+
+  const handleSpecialImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (specialImagePreview) {
+      URL.revokeObjectURL(specialImagePreview);
+    }
+
+    setSpecialImage(file);
+    setSpecialImagePreview(URL.createObjectURL(file));
+  };
+
+  const removeSpecialImage = () => {
+    if (specialImagePreview) {
+      URL.revokeObjectURL(specialImagePreview);
+    }
+    setSpecialImage(null);
+    setSpecialImagePreview('');
+  };
 
   /* =========================
      LIVRAISON
@@ -147,6 +181,8 @@ export default function Commander({
   /*
    * Une création spéciale ne possède pas encore
    * de prix et ne demande donc aucun acompte.
+   * Sacs et vêtements suivent tous les deux le même
+   * circuit d'acompte à 50% dès qu'ils sont dans le panier.
    */
   const requiresDeposit =
     !specialRequest && cart.length > 0;
@@ -332,6 +368,16 @@ export default function Commander({
       );
   }, []);
 
+  // Nettoyage de l'URL d'aperçu de l'image au démontage.
+  useEffect(() => {
+    return () => {
+      if (specialImagePreview) {
+        URL.revokeObjectURL(specialImagePreview);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   /* =========================
      PAIEMENT ACOMPTE
   ========================= */
@@ -382,10 +428,13 @@ export default function Commander({
             items: cart.map(
               (item) => ({
                 name: item.name,
-                taille: item.taille,
-                couleur:
-                  item.couleur ===
-                  'Autre'
+                taille: isBagItem(item)
+                  ? '—'
+                  : item.taille,
+                couleur: isBagItem(item)
+                  ? '—'
+                  : item.couleur ===
+                    'Autre'
                     ? item.couleurAutre
                     : item.couleur,
                 notes:
@@ -469,6 +518,7 @@ export default function Commander({
       const pieceSansTaille =
         cart.find(
           (item) =>
+            !isBagItem(item) &&
             !item.taille
         );
 
@@ -518,7 +568,7 @@ export default function Commander({
     }
 
     /*
-     * Acompte uniquement pour les commandes normales.
+     * Acompte pour toute commande normale (sacs comme vêtements).
      */
     if (
       requiresDeposit &&
@@ -542,9 +592,12 @@ export default function Commander({
       cart.length > 0
         ? cart
             .map((item, i) => {
-              const couleurFinale =
-                item.couleur === 'Autre' &&
-                item.couleurAutre
+              const bag = isBagItem(item);
+
+              const couleurFinale = bag
+                ? null
+                : item.couleur === 'Autre' &&
+                  item.couleurAutre
                   ? item.couleurAutre
                   : item.couleur ||
                     'non précisé';
@@ -553,24 +606,35 @@ export default function Commander({
                 item.price
               );
 
-              return `${i + 1}. ${item.name}
-   — Taille : ${item.taille}
-   — Couleur : ${couleurFinale}
-   — Précisions : ${
-     item.notes || 'aucune'
-   }
-   — Prix : ${
-     prix > 0
-       ? `${prix.toLocaleString()} FCFA`
-       : 'à définir'
-   }`;
+              const detailLines = [
+                !bag &&
+                  `   — Taille : ${item.taille}`,
+                !bag &&
+                  `   — Couleur : ${couleurFinale}`,
+                `   — Précisions : ${
+                  item.notes || 'aucune'
+                }`,
+                `   — Prix : ${
+                  prix > 0
+                    ? `${prix.toLocaleString()} FCFA`
+                    : 'à définir'
+                }`,
+              ]
+                .filter(Boolean)
+                .join('\n');
+
+              return `${i + 1}. ${item.name}\n${detailLines}`;
             })
             .join('\n\n')
         : null;
 
+    const specialImageNote = specialRequest && specialImage
+      ? `\n📎 Une photo d'inspiration est prête à être envoyée : merci de la joindre manuellement à ce message une fois la conversation WhatsApp ouverte (fichier : ${specialImage.name}).`
+      : '';
+
     const specialPart = specialRequest
       ? `✨ Création spéciale
-— Description de la création : ${specialDescription}`
+— Description de la création : ${specialDescription}${specialImageNote}`
       : null;
 
     const refSuffix =
@@ -645,7 +709,9 @@ ${livraisonLine}`;
     );
 
     showToast(
-      'Commande envoyée sur WhatsApp !'
+      specialRequest && specialImage
+        ? "Commande envoyée sur WhatsApp ! N'oubliez pas de joindre votre photo."
+        : 'Commande envoyée sur WhatsApp !'
     );
   };
 
@@ -770,7 +836,7 @@ ${livraisonLine}`;
             COLONNE PRINCIPALE
         ========================= */}
 
-        <div>
+        <div className="order-main-content">
 
           {/* PANIER */}
           <div className="order-section">
@@ -820,145 +886,57 @@ ${livraisonLine}`;
                   item.price
                 );
 
+              const bag = isBagItem(item);
+
               return (
                 <div
                   key={item.id}
-                  style={{
-                    border:
-                      '1px solid rgba(212,169,74,.25)',
-                    padding:
-                      '1.5rem',
-                    marginBottom:
-                      '1.2rem',
-                    background:
-                      'var(--white)',
-                  }}
+                  className="cart-item-card"
                 >
 
-                  <div
-                    style={{
-                      display:
-                        'flex',
-                      justifyContent:
-                        'space-between',
-                      alignItems:
-                        'center',
-                      marginBottom:
-                        '1rem',
-                      gap: '1rem',
-                    }}
-                  >
+                  <div className="cart-item-head">
 
-                    <div
-                      style={{
-                        fontFamily:
-                          'var(--ff-display)',
-                        fontSize:
-                          '1.15rem',
-                        color:
-                          'var(--chocolate)',
-                      }}
-                    >
-                      {item.emoji}{' '}
+                    <div className="cart-item-title">
+                      <span className="cart-item-emoji">{item.emoji}</span>
                       {item.name}{' '}
 
-                      <span
-                        style={{
-                          color:
-                            'var(--chocolate-light)',
-                          fontSize:
-                            '.9rem',
-                        }}
-                      >
+                      <span className="cart-item-price">
                         —
                         {' '}
                         {prix > 0
                           ? `${prix.toLocaleString()} FCFA`
                           : 'Prix à définir'}
                       </span>
+
+                      {bag && (
+                        <span className="cart-item-tag">Sac (wax)</span>
+                      )}
                     </div>
 
                     <button
+                      className="cart-item-remove"
                       onClick={() =>
                         removeFromCart(
                           item.id
                         )
                       }
-                      style={{
-                        fontSize:
-                          '.7rem',
-                        letterSpacing:
-                          '.15em',
-                        textTransform:
-                          'uppercase',
-                        color:
-                          'var(--terracotta)',
-                      }}
                     >
                       Retirer ✕
                     </button>
 
                   </div>
 
-                  <div className="form-row">
-
+                  {bag ? (
+                    /* Commande simplifiée pour les sacs : pas de taille
+                       ni de couleur de mailles à choisir. */
                     <div className="form-group">
                       <label>
-                        Taille *
-                      </label>
-
-                      <select
-                        value={
-                          item.taille
-                        }
-                        onChange={(e) =>
-                          updateCartItem(
-                            item.id,
-                            {
-                              taille:
-                                e.target
-                                  .value,
-                            }
-                          )
-                        }
-                      >
-                        <option value="">
-                          — Sélectionner —
-                        </option>
-
-                        <option>
-                          XS
-                        </option>
-                        <option>
-                          S
-                        </option>
-                        <option>
-                          M
-                        </option>
-                        <option>
-                          L
-                        </option>
-                        <option>
-                          XL
-                        </option>
-                        <option>
-                          XXL
-                        </option>
-                        <option>
-                          Sur mesure
-                        </option>
-                      </select>
-                    </div>
-
-                    <div className="form-group">
-                      <label>
-                        Précisions
-                        (optionnel)
+                        Précisions (optionnel)
                       </label>
 
                       <input
                         type="text"
-                        placeholder="Détails, ajustements..."
+                        placeholder="Motif souhaité, doublure, taille du sac..."
                         value={
                           item.notes ||
                           ''
@@ -975,91 +953,151 @@ ${livraisonLine}`;
                         }
                       />
                     </div>
+                  ) : (
+                    <>
+                      <div className="form-row">
 
-                  </div>
+                        <div className="form-group">
+                          <label>
+                            Taille *
+                          </label>
 
-                  <div className="form-group">
-
-                    <label>
-                      Couleur
-                    </label>
-
-                    <div
-                      style={{
-                        display:
-                          'flex',
-                        gap: '.5rem',
-                        flexWrap:
-                          'wrap',
-                      }}
-                    >
-                      {swatches.map(
-                        (sw) => (
-                          <button
-                            key={
-                              sw.name
+                          <select
+                            value={
+                              item.taille
                             }
-                            type="button"
-                            title={
-                              sw.name
-                            }
-                            onClick={() =>
+                            onChange={(e) =>
                               updateCartItem(
                                 item.id,
                                 {
-                                  couleur:
-                                    sw.name,
+                                  taille:
+                                    e.target
+                                      .value,
                                 }
                               )
                             }
-                            style={{
-                              width: 28,
-                              height: 28,
-                              borderRadius:
-                                '50%',
-                              background:
-                                sw.color,
-                              border:
-                                item.couleur ===
-                                sw.name
-                                  ? '2px solid var(--terracotta)'
-                                  : sw.border
-                                  ? '1px solid #ccc'
-                                  : '1px solid transparent',
-                              cursor:
-                                'pointer',
-                            }}
+                          >
+                            <option value="">
+                              — Sélectionner —
+                            </option>
+
+                            <option>
+                              XS
+                            </option>
+                            <option>
+                              S
+                            </option>
+                            <option>
+                              M
+                            </option>
+                            <option>
+                              L
+                            </option>
+                            <option>
+                              XL
+                            </option>
+                            <option>
+                              XXL
+                            </option>
+                            <option>
+                              Sur mesure
+                            </option>
+                          </select>
+                        </div>
+
+                        <div className="form-group">
+                          <label>
+                            Précisions
+                            (optionnel)
+                          </label>
+
+                          <input
+                            type="text"
+                            placeholder="Détails, ajustements..."
+                            value={
+                              item.notes ||
+                              ''
+                            }
+                            onChange={(e) =>
+                              updateCartItem(
+                                item.id,
+                                {
+                                  notes:
+                                    e.target
+                                      .value,
+                                }
+                              )
+                            }
                           />
-                        )
-                      )}
-                    </div>
+                        </div>
 
-                    <input
-                      type="text"
-                      placeholder="Précisez si autre couleur..."
-                      style={{
-                        marginTop:
-                          '.5rem',
-                      }}
-                      value={
-                        item.couleurAutre ||
-                        ''
-                      }
-                      onChange={(e) =>
-                        updateCartItem(
-                          item.id,
-                          {
-                            couleurAutre:
-                              e.target
-                                .value,
-                            couleur:
-                              'Autre',
+                      </div>
+
+                      <div className="form-group">
+
+                        <label>
+                          Couleur
+                        </label>
+
+                        <div className="swatch-grid">
+                          {swatches.map(
+                            (sw) => (
+                              <button
+                                key={
+                                  sw.name
+                                }
+                                type="button"
+                                title={
+                                  sw.name
+                                }
+                                className={`swatch-dot ${
+                                  item.couleur === sw.name
+                                    ? 'is-selected'
+                                    : ''
+                                } ${sw.border ? 'has-border' : ''}`}
+                                onClick={() =>
+                                  updateCartItem(
+                                    item.id,
+                                    {
+                                      couleur:
+                                        sw.name,
+                                    }
+                                  )
+                                }
+                                style={{
+                                  background:
+                                    sw.color,
+                                }}
+                              />
+                            )
+                          )}
+                        </div>
+
+                        <input
+                          type="text"
+                          className="swatch-custom-input"
+                          placeholder="Vous ne trouvez pas votre couleur ? Décrivez-la ici..."
+                          value={
+                            item.couleurAutre ||
+                            ''
                           }
-                        )
-                      }
-                    />
+                          onChange={(e) =>
+                            updateCartItem(
+                              item.id,
+                              {
+                                couleurAutre:
+                                  e.target
+                                    .value,
+                                couleur:
+                                  'Autre',
+                              }
+                            )
+                          }
+                        />
 
-                  </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               );
             })}
@@ -1123,12 +1161,50 @@ ${livraisonLine}`;
                   />
                 </div>
 
+                <div className="form-group">
+                  <label>
+                    Photo d'inspiration (optionnel)
+                  </label>
+
+                  {!specialImagePreview ? (
+                    <label className="special-upload-zone">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleSpecialImageChange}
+                        hidden
+                      />
+                      <span className="special-upload-icon">📷</span>
+                      <span>Cliquez pour choisir une image</span>
+                    </label>
+                  ) : (
+                    <div className="special-upload-preview">
+                      <img src={specialImagePreview} alt="Aperçu de l'inspiration" />
+                      <button
+                        type="button"
+                        className="special-upload-remove"
+                        onClick={removeSpecialImage}
+                      >
+                        Retirer la photo ✕
+                      </button>
+                    </div>
+                  )}
+
+                  <p className="special-upload-note">
+                    WhatsApp ne permet pas de joindre automatiquement une
+                    image via ce lien : gardez-la sous la main, il vous
+                    suffira de l'ajouter en une touche dans la conversation
+                    WhatsApp qui s'ouvrira à la validation.
+                  </p>
+                </div>
+
                 <button
                   type="button"
                   className="special-cancel-btn"
                   onClick={() => {
                     setSpecialRequest(false);
                     setSpecialDescription('');
+                    removeSpecialImage();
                   }}
                 >
                   Annuler
@@ -1490,74 +1566,6 @@ ${livraisonLine}`;
               </div>
             )}
 
-          {/* =========================
-              VALIDATION
-          ========================= */}
-
-          {(cart.length > 0 ||
-            specialRequest) && (
-            <>
-              <button
-                className={`btn btn-fill order-validate-btn ${
-                  !depositDeclared &&
-                  !specialRequest
-                    ? 'btn-disabled'
-                    : ''
-                }`}
-                style={{
-                  width: '100%',
-                  justifyContent:
-                    'center',
-                  padding:
-                    '1.1rem',
-                }}
-                onClick={
-                  validate
-                }
-                disabled={
-                  !depositDeclared &&
-                  !specialRequest
-                }
-              >
-                <span>
-                  {specialRequest
-                    ? 'Envoyer ma demande'
-                    : 'Valider ma commande'}
-                </span>
-
-                <svg
-                  width="16"
-                  height="16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </button>
-
-              <p
-                style={{
-                  fontSize:
-                    '.75rem',
-                  color:
-                    'var(--muted)',
-                  marginTop:
-                    '.8rem',
-                  textAlign:
-                    'center',
-                }}
-              >
-                {specialRequest
-                  ? "Votre demande de création spéciale sera envoyée sur WhatsApp. Le prix sera défini après étude."
-                  : depositDeclared
-                  ? "Votre commande sera envoyée sur WhatsApp avec le détail de votre paiement."
-                  : "Réglez l'acompte pour activer la validation."}
-              </p>
-            </>
-          )}
-
         </div>
 
         {/* =========================
@@ -1719,6 +1727,75 @@ ${livraisonLine}`;
           </div>
 
         </div>
+
+        {/* =========================
+            VALIDATION
+            (placé après le récapitulatif, cf. grid-template-areas)
+        ========================= */}
+
+        {(cart.length > 0 ||
+          specialRequest) && (
+          <div className="order-validate-block">
+            <button
+              className={`btn btn-fill order-validate-btn ${
+                !depositDeclared &&
+                !specialRequest
+                  ? 'btn-disabled'
+                  : ''
+              }`}
+              style={{
+                width: '100%',
+                justifyContent:
+                  'center',
+                padding:
+                  '1.1rem',
+              }}
+              onClick={
+                validate
+              }
+              disabled={
+                !depositDeclared &&
+                !specialRequest
+              }
+            >
+              <span>
+                {specialRequest
+                  ? 'Envoyer ma demande'
+                  : 'Valider ma commande'}
+              </span>
+
+              <svg
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                viewBox="0 0 24 24"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <p
+              style={{
+                fontSize:
+                  '.75rem',
+                color:
+                  'var(--muted)',
+                marginTop:
+                  '.8rem',
+                textAlign:
+                  'center',
+              }}
+            >
+              {specialRequest
+                ? "Votre demande de création spéciale sera envoyée sur WhatsApp. Le prix sera défini après étude."
+                : depositDeclared
+                ? "Votre commande sera envoyée sur WhatsApp avec le détail de votre paiement."
+                : "Réglez l'acompte pour activer la validation."}
+            </p>
+          </div>
+        )}
 
       </div>
     </div>

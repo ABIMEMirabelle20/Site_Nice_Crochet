@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import Loader from './components/Loader';
 import Navbar from './components/Navbar';
 import Toast from './components/Toast';
+import CartSidebar from './components/CartSidebar';
 
 import Home from './pages/Home';
 import Formations from './pages/Formations';
@@ -15,6 +16,7 @@ export default function App() {
   const [page, setPage] = useState('accueil');
   const [formation, setFormation] = useState(null);
   const [cart, setCart] = useState([]);
+  const [cartOpen, setCartOpen] = useState(false);
 
   const [toast, setToast] = useState({
     message: '',
@@ -188,6 +190,18 @@ export default function App() {
     );
   };
 
+  // Depuis l'icône panier de la navbar (mobile) : ouvre le panier
+  // latéral plutôt que de naviguer directement vers Commander.
+  const openCartSidebar = () => setCartOpen(true);
+  const closeCartSidebar = () => setCartOpen(false);
+
+  // "Finaliser la commande" dans le panier latéral : ferme le panier
+  // et redirige vers la page Commander pour la validation + l'acompte.
+  const handleCheckoutFromCart = () => {
+    setCartOpen(false);
+    goTo('commander');
+  };
+
   // =========================
   // TOAST
   // =========================
@@ -221,6 +235,16 @@ export default function App() {
       <Navbar
         page={page}
         goTo={goTo}
+        cartCount={cart.length}
+        onCartClick={openCartSidebar}
+      />
+
+      <CartSidebar
+        open={cartOpen}
+        onClose={closeCartSidebar}
+        cart={cart}
+        removeFromCart={removeFromCart}
+        onCheckout={handleCheckoutFromCart}
       />
 
       <Toast
