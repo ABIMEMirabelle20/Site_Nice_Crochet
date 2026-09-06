@@ -848,16 +848,20 @@ footer::before{
 .filter-btn{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;padding:.6rem 1.3rem;border-radius:999px;border:1px solid var(--gold);color:var(--muted);font-weight:500;transition:all .3s}
 .filter-btn.active,.filter-btn:hover{background:var(--chocolate);color:var(--cream);border-color:var(--chocolate)}
 .collection-grid{
-  column-count:3;
-  column-gap:1.6rem;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1.6rem 1.6rem;
   padding:2rem clamp(1.5rem,6vw,5rem) clamp(4rem,8vw,6rem);
   max-width:1400px;
   margin:0 auto;
   transition:opacity .2s;
 }
-.product-card{ break-inside:avoid; margin-bottom:1.6rem; }
-/* Hauteurs de vignette variées, en cycle de 3, pour un rendu croisé
-   façon mur d'inspiration plutôt qu'une grille alignée au cordeau. */
+/* Décalage vertical par position (pas par contenu) : garantit un effet
+   croisé net et visible, tout en gardant les articles voisins dans la
+   liste côte à côte — contrairement au multi-colonnes qui remplissait
+   une colonne entière avant de passer à la suivante. */
+.collection-grid .product-card:nth-child(3n+2){ margin-top:2.6rem; }
+.collection-grid .product-card:nth-child(3n){ margin-top:1.3rem; }
 .collection-grid .product-card:nth-child(3n+1) .product-img-wrap{ aspect-ratio:3/4; }
 .collection-grid .product-card:nth-child(3n+2) .product-img-wrap{ aspect-ratio:1/1; }
 .collection-grid .product-card:nth-child(3n) .product-img-wrap{ aspect-ratio:4/5; }
@@ -1279,7 +1283,10 @@ footer::before{
   .nav { padding-left: 1rem; padding-right: 1rem; }
 
   .collection-hero { gap: 1.5rem; }
-  .collection-grid{ column-count:2; }
+  .collection-grid{ grid-template-columns:repeat(2,1fr); }
+  .collection-grid .product-card:nth-child(3n){ margin-top:0; }
+  .collection-grid .product-card:nth-child(even){ margin-top:2.6rem; }
+  .collection-grid .product-card:nth-child(odd){ margin-top:0; }
   .form-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .order-main { grid-template-columns: 1fr; grid-template-areas: "main" "recap" "validate"; }
   .order-recap { position: static; }
@@ -1316,10 +1323,13 @@ footer::before{
   .footer-bottom { flex-direction: column; gap: 0.5rem; text-align: center; }
   .form-row { grid-template-columns: 1fr; }
 
-  /* Masonry Collection compact sur mobile — colonnes toujours
-     décalées grâce aux hauteurs variées définies plus haut. */
-  .collection-grid{ column-count:2; column-gap:1rem; padding-left:1.1rem; padding-right:1.1rem; }
-  .product-card{ margin-bottom:1rem; }
+  /* Grille Collection décalée sur mobile : 2 colonnes, décalage
+     vertical net par position — effet croisé garanti, articles
+     voisins dans la liste toujours voisins visuellement. */
+  .collection-grid{ grid-template-columns:repeat(2,1fr); gap:1rem; padding-left:1.1rem; padding-right:1.1rem; }
+  .collection-grid .product-card:nth-child(3n){ margin-top:0; }
+  .collection-grid .product-card:nth-child(even){ margin-top:2rem; }
+  .collection-grid .product-card:nth-child(odd){ margin-top:0; }
   .product-info{ padding:1rem 1.1rem; }
   .product-info h3{ font-family:var(--ff-display); font-size:1rem; }
   .product-info p{
