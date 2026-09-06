@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import Loader from './components/Loader';
 import Navbar from './components/Navbar';
 import Toast from './components/Toast';
-import CartSidebar from './components/Cartsidebar';
+import CartSidebar from './components/CartSidebar';
 
 import Home from './pages/Home';
 import Formations from './pages/Formations';
