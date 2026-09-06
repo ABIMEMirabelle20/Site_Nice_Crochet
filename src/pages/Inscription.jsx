@@ -65,7 +65,12 @@ export default function Inscription({ goTo, goBack, formation, showToast }) {
         <div className="inscr-resume-card"><div className="rc-icon">💰</div><div><div className="rc-label">Tarif</div><div className="rc-val">{prixTotal.toLocaleString()} FCFA</div></div></div>
       </div>
 
+      {/* Grille à 4 blocs (form / récap / validation / infos) plutôt que
+          2 : ça permet de placer le récapitulatif AVANT le bouton de
+          validation quand tout s'empile sur mobile, tout en gardant le
+          même rendu 2 colonnes sur desktop (voir CSS : grid-column). */}
       <div className="inscr-body">
+
         <div className="inscr-form-card">
           <h2>Vos informations personnelles</h2>
           <div className="form-row">
@@ -101,15 +106,10 @@ export default function Inscription({ goTo, goBack, formation, showToast }) {
           </div>
           <div className="form-group"><label>Disponibilités préférées</label><input type="text" placeholder="Ex: weekends, soir en semaine, matin..." value={dispo} onChange={(e) => setDispo(e.target.value)} /></div>
           <div className="form-group"><label>Questions ou précisions</label><textarea placeholder="Tout ce que vous souhaitez nous faire savoir..." value={notes} onChange={(e) => setNotes(e.target.value)}></textarea></div>
-
-          <button className="btn btn-fill" style={{ width: '100%', justifyContent: 'center', padding: '1.1rem', marginTop: '.5rem' }} onClick={submit}>
-            <span>Envoyer mon inscription par WhatsApp</span>
-            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-          </button>
-          <p style={{ fontSize: '.75rem', color: 'var(--muted)', marginTop: '.8rem', textAlign: 'center' }}>Votre inscription sera envoyée directement sur notre WhatsApp. Nous vous confirmons sous 24h.</p>
         </div>
 
-        <div className="inscr-sidebar">
+        {/* RÉCAPITULATIF — vient avant le bouton de validation */}
+        <div className="inscr-recap-card">
           <div className="sidebar-card">
             <h3>Récapitulatif</h3>
             <div className="sidebar-recap">
@@ -128,7 +128,19 @@ export default function Inscription({ goTo, goBack, formation, showToast }) {
               <span className="pm-badge">Espèces</span>
             </div>
           </div>
+        </div>
 
+        {/* VALIDATION — après le récapitulatif */}
+        <div className="inscr-validate-block">
+          <button className="btn btn-fill" style={{ width: '100%', justifyContent: 'center', padding: '1.1rem' }} onClick={submit}>
+            <span>Envoyer mon inscription par WhatsApp</span>
+            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+          </button>
+          <p style={{ fontSize: '.75rem', color: 'var(--muted)', marginTop: '.8rem', textAlign: 'center' }}>Votre inscription sera envoyée directement sur notre WhatsApp. Nous vous confirmons sous 24h.</p>
+        </div>
+
+        {/* INFOS COMPLÉMENTAIRES */}
+        <div className="inscr-sidebar">
           <div className="sidebar-card">
             <h3>Comment ça se passe</h3>
             <div className="steps-inscr">
@@ -148,6 +160,7 @@ export default function Inscription({ goTo, goBack, formation, showToast }) {
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );

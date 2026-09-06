@@ -33,7 +33,7 @@ export default function CartSidebar({ open, onClose, cart, removeFromCart, onChe
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ type: 'spring', stiffness: 340, damping: 32, mass: 0.8 }}
           >
             <div className="cart-sidebar-head">
               <h3>Mon panier {cart.length > 0 ? `(${cart.length})` : ''}</h3>
