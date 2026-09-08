@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import logo from "../ressources/Logo.jpeg";
+import { WHATSAPP_NUMBER } from '../data';
 
+// Nav desktop : inchangée, pour ne rien casser de la détection de
+// section active existante.
 const LINKS = [
   { id: 'accueil', label: 'Accueil' },
   { id: 'apropos', label: 'À propos' },
@@ -9,10 +12,17 @@ const LINKS = [
   { id: 'commander', label: 'Commander' },
 ];
 
-// Sur mobile, "Commander" est remplacé par une icône panier à côté du
-// hamburger : on ne l'affiche donc plus dans le menu déroulant mobile,
-// pour éviter le doublon.
-const MOBILE_LINKS = LINKS.filter((l) => l.id !== 'commander');
+// Menu plein écran (mobile) : plus riche, à la manière d'un mega-menu —
+// certaines entrées pointent vers la même section (L'Atelier / À propos)
+// puisque le contenu réel ne les distingue pas encore.
+const FULL_MENU = [
+  { id: 'collection', label: 'Collection' },
+  { id: 'suremesure', label: 'Sur mesure' },
+  { id: 'apropos', label: "L'atelier" },
+  { id: 'formations', label: 'Formations' },
+  { id: 'apropos', label: 'À propos' },
+  { id: 'contact', label: 'Contact' },
+];
 
 export default function Navbar({ page, goTo, cartCount = 0, onCartClick }) {
   const [scrolled, setScrolled] = useState(false);
@@ -49,11 +59,43 @@ export default function Navbar({ page, goTo, cartCount = 0, onCartClick }) {
     }
   }, [page]);
 
+  // Empêche le scroll du body pendant que le menu plein écran est ouvert.
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileOpen]);
+
+  const scrollToSection = (sectionId) => {
+    if (page === 'accueil') {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+
+    setActiveSection('accueil');
+    goTo('accueil');
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  };
+
   const handleNav = (id) => {
     setMobileOpen(false);
 
-    if (id === 'apropos' && page === 'accueil') {
-      document.getElementById('apropos-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (id === 'apropos') {
+      scrollToSection('apropos-section');
+      return;
+    }
+
+    if (id === 'suremesure') {
+      scrollToSection('suremesure-section');
+      return;
+    }
+
+    if (id === 'contact') {
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}`, '_blank');
       return;
     }
 
@@ -61,6 +103,7 @@ export default function Navbar({ page, goTo, cartCount = 0, onCartClick }) {
   };
 
   const handleCartClick = () => {
+    setMobileOpen(false);
     if (onCartClick) {
       onCartClick();
     } else {
@@ -118,13 +161,15 @@ export default function Navbar({ page, goTo, cartCount = 0, onCartClick }) {
         </div>
       </nav>
 
-      <div className={`mobile-menu ${mobileOpen ? 'open' : ''}`}>
-        <ul>
-          {MOBILE_LINKS.map((l) => (
-            <li key={l.id}>
+      {/* Menu plein écran (mobile) : grandes lettres, beaucoup d'espace. */}
+      <div className={`mobile-fullmenu ${mobileOpen ? 'open' : ''}`}>
+        <div className="mobile-fullmenu-brand">Nice Création</div>
+
+        <ul className="mobile-fullmenu-links">
+          {FULL_MENU.map((l, i) => (
+            <li key={`${l.id}-${i}`}>
               <a
                 href="#"
-                className={isActive(l.id) ? 'active' : ''}
                 onClick={(e) => { e.preventDefault(); handleNav(l.id); }}
               >
                 {l.label}
@@ -132,6 +177,12 @@ export default function Navbar({ page, goTo, cartCount = 0, onCartClick }) {
             </li>
           ))}
         </ul>
+
+        <div className="mobile-fullmenu-socials">
+          <a href="https://www.instagram.com/nice.creation1?igsh=Z3AxdHhsaHE4Mjdv" target="_blank" rel="noreferrer">Instagram</a>
+          <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noreferrer">WhatsApp</a>
+          <a href="https://www.tiktok.com/@nicecrochet0?_r=1&_t=ZS-97t2LsEUaTF" target="_blank" rel="noreferrer">TikTok</a>
+        </div>
       </div>
     </>
   );

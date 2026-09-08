@@ -9,7 +9,7 @@ import storyImage from "../ressources/photo7.jpg";
 // enrichir la rotation.
 const heroImages = [heroImage, storyImage];
 
-// Bande de motifs qui défile en continu sous le hero.
+// Bande de motifs qui défile en continu sous le manifeste.
 const motifItems = [
   { icon: '🧶', label: '100% fait main' },
   { icon: '★', label: 'Note 5/5' },
@@ -17,17 +17,21 @@ const motifItems = [
   { icon: '🪡', label: 'Séries limitées' },
 ];
 
+// Processus de commande — timeline compacte (horizontale sur desktop,
+// verticale sur mobile, cf. CSS).
 const processSteps = [
-  { num: '01', title: 'Choisissez', desc: 'Parcourez la collection ou décrivez votre pièce sur-mesure.' },
-  { num: '02', title: 'Sur mesure', desc: 'Vos mensurations et préférences guident la confection.' },
-  { num: '03', title: 'Livraison', desc: 'Réception soignée, où que vous soyez au Bénin.' },
+  { num: '01', title: 'Choisir', sub: 'Collection ou sur-mesure' },
+  { num: '02', title: 'Personnaliser', sub: 'Taille, couleur, mesures' },
+  { num: '03', title: 'Livrer', sub: 'Création soigneusement emballée' },
 ];
 
+// Les pièces signature — sélection volontairement limitée (esprit
+// boutique plutôt que catalogue).
 const creations = [
   {
     id: 'robe-crochet-ivoire',
-    name: 'Robe Crochet Ivoire',
-    desc: 'Élégance naturelle et légèreté pour toutes occasions',
+    name: 'Robe Ivoire',
+    subtitle: 'Pièce faite main',
     price: 15000,
     tag: 'Nouveauté',
     emoji: '🌿',
@@ -36,7 +40,7 @@ const creations = [
   {
     id: 'top-crochet-elegant',
     name: 'Top Crochet Élégant',
-    desc: "Plusieurs teintes, parfait pour l'été",
+    subtitle: 'Pièce faite main',
     price: 8000,
     tag: 'Best-seller',
     emoji: '🎀',
@@ -45,7 +49,7 @@ const creations = [
   {
     id: 'ensemble-deux-pieces',
     name: 'Ensemble Deux Pièces',
-    desc: 'Tenue élégante et confortable pour toute occasion',
+    subtitle: 'Pièce faite main',
     price: 20000,
     tag: 'Édition limitée',
     emoji: '✨',
@@ -54,7 +58,7 @@ const creations = [
   {
     id: 'sac-wax-tresse',
     name: 'Sac Wax Tressé',
-    desc: 'Tissu wax authentique, doublure intérieure cousue main',
+    subtitle: 'Accessoire fait main',
     price: 12000,
     tag: 'Accessoire',
     emoji: '🧺',
@@ -62,23 +66,37 @@ const creations = [
   },
 ];
 
+// Collection 2026 — éditions thématiques. Les visuels ci-dessous sont
+// des dégradés d'exemple : à remplacer par de vraies photos une fois
+// les groupes de pièces/inspiration réunis par thème.
+const editions = [
+  {
+    name: 'Terre & Lumière',
+    story: "Des teintes minérales, inspirées des sols ocres du Bénin.",
+    palette: 'linear-gradient(135deg,#C99B3B,#B9684D)',
+    count: 6,
+  },
+  {
+    name: 'Bleu Atlantique',
+    story: "Un hommage à la côte, entre indigo profond et écume claire.",
+    palette: 'linear-gradient(135deg,#2E3A59,#A9C6E0)',
+    count: 5,
+  },
+];
+
+// Ce que le savoir-faire garantit — extrait en section autonome.
+const craftValues = [
+  { icon: '🪡', title: 'Fait main, pièce par pièce', desc: 'Chaque maille est travaillée à la main, sans exception.' },
+  { icon: '♻️', title: 'Matières choisies, durables', desc: 'Des fils sélectionnés pour leur qualité et leur tenue dans le temps.' },
+  { icon: '🎁', title: 'Séries limitées, uniques', desc: "Peu d'exemplaires, jamais de production de masse." },
+];
+
+// Témoignages — mixtes (la clientèle n'est pas exclusivement féminine).
 const testimonialsData = [
-  {
-    text: "Les créations de Nice Crochet sont incroyables ! Raffinées, élégantes, et faites avec amour.",
-    author: '— Aïcha B.'
-  },
-  {
-    text: "Commande reçue très rapidement. Service top et qualité parfaitement au rendez-vous. Je recommande !",
-    author: '— Mariam T.'
-  },
-  {
-    text: "Ma marque préférée pour les pièces faites main. Le soin apporté à chaque création est exceptionnel.",
-    author: '— Vanessa L.'
-  },
-  {
-    text: "Ma robe sur mesure est exactement ce que j'avais imaginé, en encore mieux. Une vraie pépite béninoise.",
-    author: '— Fatou D.'
-  },
+  { text: "Les créations de Nice Création sont incroyables ! Raffinées, élégantes, et faites avec amour.", author: 'Aïcha B.', initial: 'A' },
+  { text: "Commande reçue très rapidement. Service top et qualité parfaitement au rendez-vous. Je recommande !", author: 'Mariam T.', initial: 'M' },
+  { text: "Un cadeau pour ma compagne qui a fait sensation. Le souci du détail est impressionnant.", author: 'Kévin A.', initial: 'K' },
+  { text: "Ma robe sur mesure est exactement ce que j'avais imaginé, en encore mieux. Une vraie pépite béninoise.", author: 'Fatou D.', initial: 'F' },
 ];
 
 const reveal = {
@@ -139,19 +157,26 @@ export default function Home({ goTo, addToCart }) {
     trackRef.current.scrollBy({ left: dir * 340, behavior: 'smooth' });
   };
 
+  // "Commencer mon projet" (section Sur mesure) : renvoie vers Commander
+  // et ouvre directement la zone de description de création spéciale —
+  // même mécanisme que le CTA équivalent sur la page Collection.
+  const startSpecialProject = () => {
+    goTo('commander');
+    window.setTimeout(() => {
+      window.dispatchEvent(new Event('open-special-request'));
+    }, 50);
+  };
+
   return (
     <div className="page active" id="page-accueil">
 
-      {/* ================= HERO PLEIN ÉCRAN ================= */}
+      {/* ================= HERO ================= */}
       <section
         className="hero2 nav-section"
         data-nav-theme="chocolate"
         data-nav-text="light"
         data-nav-section-id="accueil"
       >
-        {/* Toutes les images restent montées en permanence, empilées ;
-            seule l'opacité change, en fondu lent — jamais de démontage,
-            donc jamais de flash sur le fond marron entre deux photos. */}
         <div className="hero2-bg">
           {heroImages.map((src, i) => (
             <motion.img
@@ -171,43 +196,38 @@ export default function Home({ goTo, addToCart }) {
           animate="visible"
           variants={heroContainer}
         >
-          <motion.span className="hero2-welcome" variants={heroItem}>Bienvenue chez</motion.span>
           <motion.h1 className="hero2-title" variants={heroItem}>
-            <em>Nice Création</em>
+            L'art du crochet,<br /><em>réinventé.</em>
           </motion.h1>
 
           <motion.p className="hero2-desc" variants={heroItem}>
-            Des pièces en crochet <strong>100% faites main</strong>,
-            pensées comme des œuvres uniques — séries limitées,
-            matières choisies, finitions impeccables.
+            Créations faites main au Bénin. Des pièces singulières,
+            pensées pour durer.
           </motion.p>
 
           <motion.div className="hero2-cta-row" variants={heroItem}>
             <button className="btn btn-fill" onClick={() => goTo('collection')}>
-              <span>Découvrir nos créations</span>
+              <span>Découvrir la collection</span>
               <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </button>
-            <button className="btn-outline-light" onClick={() => goTo('apropos')}>
-              <span>Notre histoire</span>
-            </button>
           </motion.div>
-
-          <motion.span className="hero2-eyebrow" variants={heroItem}>
-            Atelier créatif · Cotonou, Bénin
-          </motion.span>
         </motion.div>
 
-        {/* Bord en vague, enchaîne avec la bande de motifs */}
         <div className="hero2-wave" aria-hidden="true">
           <svg viewBox="0 0 1440 90" preserveAspectRatio="none">
-            <path d="M0,32 C240,90 480,0 720,24 C960,48 1200,90 1440,40 L1440,90 L0,90 Z" fill="#3D2417" />
+            <path d="M0,32 C240,90 480,0 720,24 C960,48 1200,90 1440,40 L1440,90 L0,90 Z" fill="#3A2117" />
           </svg>
         </div>
       </section>
 
-      {/* ================= BANDE DE MOTIFS — défilement continu ================= */}
+      {/* ================= MANIFESTE ================= */}
+      <div className="manifesto-band">
+        <p>« Chaque pièce est unique. <em>Comme vous.</em> »</p>
+      </div>
+
+      {/* ================= BANDE DE MOTIFS ================= */}
       <div className="motif-strip">
         <div className="motif-track">
           {[...motifItems, ...motifItems, ...motifItems].map((m, i) => (
@@ -219,70 +239,16 @@ export default function Home({ goTo, addToCart }) {
         </div>
       </div>
 
-      {/* ================= 1. QU'EST-CE QUE LA MARQUE / POURQUOI ================= */}
-      <section className="maker nav-section" id="apropos-section" data-nav-theme="chocolate" data-nav-text="light" data-nav-section-id="apropos">
-        <div className="maker-inner">
-          <motion.div
-            className="maker-photo"
-            initial={{ opacity: 0, scale: 0.92 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <img src={storyImage} alt="La créatrice de Nice Création" />
-          </motion.div>
-
-          <motion.div
-            className="maker-text"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={staggerContainer}
-          >
-            <motion.span className="tag" variants={reveal}>Qui nous sommes</motion.span>
-            <motion.h2 className="display-strong" variants={reveal}>
-              Née d'une <em>ambition</em>, devenue un <em>savoir-faire</em>
-            </motion.h2>
-            <motion.p variants={reveal}>
-              <strong>Nice Création</strong> est née d'une ambition simple : devenir
-              indépendante en maîtrisant un vrai métier de savoir-faire. Le crochet
-              s'est imposé comme une évidence.
-            </motion.p>
-            <motion.p variants={reveal}>
-              Chaque pièce porte une histoire — des heures de patience, des nuits
-              de travail, mais surtout de la précision et du raffinement dans
-              chaque maille. Aujourd'hui, la marque grandit : une communauté
-              fidèle, des créations sur-mesure et des formations pour transmettre
-              ce savoir-faire béninois. 🧶
-            </motion.p>
-
-            <motion.div className="maker-benefits" variants={reveal}>
-              <div className="maker-benefit">
-                <span className="maker-benefit-icon">🪡</span>
-                <span>Fait main, pièce par pièce</span>
-              </div>
-              <div className="maker-benefit">
-                <span className="maker-benefit-icon">♻️</span>
-                <span>Matières choisies, durables</span>
-              </div>
-              <div className="maker-benefit">
-                <span className="maker-benefit-icon">🎁</span>
-                <span>Séries limitées, uniques</span>
-              </div>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ================= 2. CE QUE NOUS PROPOSONS ================= */}
+      {/* ================= LES PIÈCES SIGNATURE ================= */}
       <section className="creations-section" data-nav-section-id="collection">
         <div className="creations-head">
           <div>
             <div className="section-label">Notre sélection</div>
-            <h2 className="section-title section-title-lg display-strong">Créations <em>en vogue</em></h2>
+            <h2 className="section-title section-title-lg display-strong">Les pièces <em>signature</em></h2>
+            <p className="creations-lead">Découvrez les créations emblématiques de Nice Création.</p>
           </div>
           <button className="btn" onClick={() => goTo('collection')}>
-            <span>Toute la collection</span>
+            <span>Voir toute la collection</span>
           </button>
         </div>
 
@@ -297,15 +263,18 @@ export default function Home({ goTo, addToCart }) {
             <motion.div className={`creation-card mat-${c.material}`} key={c.id} variants={reveal}>
               <div className="creation-media">
                 <span className="creation-emoji">{c.emoji}</span>
+                {/* Zone prévue pour une vraie photo produit :
+                    <img src={c.photo} alt={c.name} /> */}
               </div>
               <span className="creation-material">{c.material === 'wax' ? 'Wax' : 'Crochet'}</span>
               <span className="creation-badge">{c.tag}</span>
+              <span className="creation-hover-label">Voir la pièce →</span>
               <div className="creation-info">
                 <h3>{c.name}</h3>
-                <p>{c.desc}</p>
+                <p>{c.subtitle}</p>
                 <div className="creation-row">
                   <span className="creation-price">{c.price.toLocaleString('fr-FR')} FCFA</span>
-                  <button className="creation-cta" onClick={() => handleAddToCart(c)}>Commander</button>
+                  <button className="creation-cta" onClick={() => handleAddToCart(c)}>Découvrir →</button>
                 </div>
               </div>
             </motion.div>
@@ -313,7 +282,90 @@ export default function Home({ goTo, addToCart }) {
         </motion.div>
       </section>
 
-      {/* ================= 3. COMMENT COMMANDER ================= */}
+      {/* ================= COLLECTION 2026 ================= */}
+      <section className="editions-section">
+        <div className="section-label" style={{ justifyContent: 'center' }}>Collection 2026</div>
+        <h2 className="section-title section-title-lg display-strong" style={{ textAlign: 'center' }}>Nos <em>éditions</em></h2>
+
+        <motion.div
+          className="editions-grid"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+          variants={staggerContainer}
+        >
+          {editions.map((ed) => (
+            <motion.div className="edition-card" key={ed.name} variants={reveal}>
+              <div className="edition-swatch" style={{ background: ed.palette }} />
+              <div className="edition-body">
+                <h3>{ed.name}</h3>
+                <p>{ed.story}</p>
+                <span className="edition-count">{ed.count} pièces</span>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+      </section>
+
+      {/* ================= L'ART DU FAIT MAIN ================= */}
+      <section className="craft-section">
+        <div className="section-label" style={{ justifyContent: 'center' }}>L'art du fait main</div>
+        <h2 className="section-title section-title-lg display-strong" style={{ textAlign: 'center' }}>Un savoir-faire <em>sans compromis</em></h2>
+
+        <motion.div
+          className="craft-grid"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={staggerContainer}
+        >
+          {craftValues.map((v) => (
+            <motion.div className="craft-item" key={v.title} variants={reveal}>
+              <span className="craft-icon">{v.icon}</span>
+              <h4>{v.title}</h4>
+              <p>{v.desc}</p>
+            </motion.div>
+          ))}
+        </motion.div>
+      </section>
+
+      {/* ================= SUR MESURE ================= */}
+      <section className="suremesure nav-section" id="suremesure-section" data-nav-theme="chocolate" data-nav-text="light">
+        <motion.div
+          className="suremesure-inner"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={staggerContainer}
+        >
+          <motion.span className="section-label" style={{ color: 'var(--gold)', justifyContent: 'center' }} variants={reveal}>
+            L'expérience sur mesure
+          </motion.span>
+          <motion.h2 className="display-strong" variants={reveal}>
+            Créez <em>votre pièce</em>
+          </motion.h2>
+          <motion.p className="suremesure-lead" variants={reveal}>
+            Imaginez-la. Nous la crochetons.
+          </motion.p>
+
+          <motion.ul className="suremesure-questions" variants={reveal}>
+            <li>Une couleur particulière ?</li>
+            <li>Une taille spécifique ?</li>
+            <li>Une inspiration à transformer en création ?</li>
+          </motion.ul>
+
+          <motion.div variants={reveal}>
+            <button className="btn btn-fill" onClick={startSpecialProject}>
+              <span>Commencer mon projet</span>
+              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </button>
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* ================= PROCESSUS DE COMMANDE (compact) ================= */}
       <section className="process-section">
         <div className="section-label" style={{ justifyContent: 'center' }}>Comment commander</div>
         <h2 className="section-title section-title-lg display-strong">Le processus de <em>commande</em></h2>
@@ -327,16 +379,57 @@ export default function Home({ goTo, addToCart }) {
         >
           {processSteps.map((s, i) => (
             <motion.div className="process-step" key={s.num} variants={reveal}>
-              {i < processSteps.length - 1 && <span className="process-line" />}
               <div className="process-num">{s.num}</div>
               <h4>{s.title}</h4>
-              <p>{s.desc}</p>
+              <p>{s.sub}</p>
+              {i < processSteps.length - 1 && <span className="process-arrow">→</span>}
             </motion.div>
           ))}
         </motion.div>
       </section>
 
-      {/* ================= 4. POSSIBILITÉS DE FORMATION ================= */}
+      {/* ================= QUI NOUS SOMMES / L'ATELIER ================= */}
+      <section className="maker nav-section" id="apropos-section" data-nav-theme="chocolate" data-nav-text="light">
+        <div className="maker-inner">
+          <motion.div
+            className="maker-photo"
+            initial={{ opacity: 0, scale: 0.92 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <img src={storyImage} alt="L'atelier Nice Création" />
+          </motion.div>
+
+          <motion.div
+            className="maker-text"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={staggerContainer}
+          >
+            <motion.span className="tag" variants={reveal}>Qui nous sommes</motion.span>
+            <motion.h2 className="display-strong" variants={reveal}>
+              Née d'une <em>ambition</em>,<br />devenue un <em>savoir-faire</em>.
+            </motion.h2>
+            <motion.p variants={reveal}>
+              Nice Création est une marque béninoise qui transforme le
+              crochet en pièces contemporaines, élégantes et singulières.
+            </motion.p>
+
+            <motion.div variants={reveal}>
+              <button className="btn-outline-light" onClick={() => goTo('collection')}>
+                <span>Notre histoire</span>
+                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ================= FORMATIONS ================= */}
       <motion.section
         className="formation-cta nav-section"
         data-nav-theme="terracotta"
@@ -349,12 +442,18 @@ export default function Home({ goTo, addToCart }) {
       >
         <div className="formation-cta-bg" aria-hidden="true">FORMATION</div>
         <div className="formation-cta-inner">
-          <span className="section-label formation-label">Apprenez le crochet</span>
-          <h2 className="display-strong">Envie de vous <em>former</em> ?</h2>
+          <span className="section-label formation-label">Formations</span>
+          <h2 className="display-strong">Transmettre le <em>savoir-faire</em></h2>
           <p>
-            Du débutant au niveau avancé, progressez à votre rythme
-            à Cotonou ou en ligne, avec un accompagnement personnalisé.
+            Apprenez le crochet à votre rythme, de l'initiation au
+            niveau avancé.
           </p>
+
+          <div className="formation-tags">
+            <span className="formation-tag-pill">Formations à Cotonou</span>
+            <span className="formation-tag-pill">Formations en ligne</span>
+          </div>
+
           <button className="btn btn-fill" onClick={() => goTo('formations')}>
             <span>Découvrir les formations</span>
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -366,8 +465,8 @@ export default function Home({ goTo, addToCart }) {
 
       {/* ================= TÉMOIGNAGES ================= */}
       <div className="section nav-section" data-nav-theme="cream" data-nav-text="dark">
-        <div className="section-label" style={{ padding: '0 clamp(1.5rem,6vw,5rem)' }}>Elles nous font confiance</div>
-        <h2 className="section-title section-title-lg display-strong" style={{ padding: '0 clamp(1.5rem,6vw,5rem)' }}>Ce qu'elles <em>disent</em></h2>
+        <div className="section-label" style={{ padding: '0 clamp(1.5rem,6vw,5rem)' }}>Elles et ils en parlent</div>
+        <h2 className="section-title section-title-lg display-strong" style={{ padding: '0 clamp(1.5rem,6vw,5rem)' }}>Ce qu'on <em>en dit</em></h2>
 
         <motion.div
           className="testimonials-track"
@@ -380,9 +479,9 @@ export default function Home({ goTo, addToCart }) {
           <div className="testimonials-inner">
             {testimonialsData.map((t, i) => (
               <motion.div className="testimonial-card" key={i} variants={reveal}>
-                <div className="testimonial-quote">"</div>
+                <div className="testimonial-avatar">{t.initial}</div>
                 <div className="testimonial-stars">★★★★★</div>
-                <p className="testimonial-text">{t.text}</p>
+                <p className="testimonial-text">« {t.text} »</p>
                 <div className="testimonial-author">{t.author}</div>
               </motion.div>
             ))}
@@ -394,6 +493,35 @@ export default function Home({ goTo, addToCart }) {
           <button className="t-btn" onClick={() => slideTestimonials(1)}>→</button>
         </div>
       </div>
+
+      {/* ================= SUIVEZ NOTRE UNIVERS (Instagram) =================
+          Vignettes statiques pour l'instant : un vrai flux Instagram
+          nécessiterait l'API Meta (Instagram Graph API) et un accès
+          développeur côté backend, non configuré ici. */}
+      <section className="insta-section">
+        <div className="section-label" style={{ justifyContent: 'center' }}>Suivez notre univers</div>
+        <h2 className="section-title section-title-lg display-strong" style={{ textAlign: 'center' }}>Sur <em>Instagram</em></h2>
+
+        <div className="insta-grid">
+          {['🧶', '👜', '🌿', '✨', '🎀', '🧺'].map((emoji, i) => (
+            <a
+              key={i}
+              className="insta-tile"
+              href="https://www.instagram.com/nice.creation1?igsh=Z3AxdHhsaHE4Mjdv"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span>{emoji}</span>
+            </a>
+          ))}
+        </div>
+
+        <div className="insta-cta">
+          <a href="https://www.instagram.com/nice.creation1?igsh=Z3AxdHhsaHE4Mjdv" target="_blank" rel="noreferrer">
+            @nice.creation1 →
+          </a>
+        </div>
+      </section>
 
       {/* ================= FOOTER ================= */}
       <div className="nav-section" data-nav-theme="cream" data-nav-text="dark">
