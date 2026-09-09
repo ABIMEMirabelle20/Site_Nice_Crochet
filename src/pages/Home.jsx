@@ -196,6 +196,10 @@ export default function Home({ goTo, addToCart }) {
           animate="visible"
           variants={heroContainer}
         >
+          <motion.div className="hero2-typewriter-wrap" variants={heroItem}>
+            <span className="hero2-typewriter">Bienvenue chez Nice Création</span>
+          </motion.div>
+
           <motion.h1 className="hero2-title" variants={heroItem}>
             L'art du crochet,<br /><em>réinventé.</em>
           </motion.h1>
@@ -216,18 +220,15 @@ export default function Home({ goTo, addToCart }) {
         </motion.div>
 
         <div className="hero2-wave" aria-hidden="true">
-          <svg viewBox="0 0 1440 90" preserveAspectRatio="none">
-            <path d="M0,32 C240,90 480,0 720,24 C960,48 1200,90 1440,40 L1440,90 L0,90 Z" fill="#3A2117" />
+          <svg viewBox="0 0 1440 80" preserveAspectRatio="none">
+            <path d="M0,40 Q720,90 1440,40 L1440,80 L0,80 Z" fill="#3A2117" />
           </svg>
         </div>
       </section>
 
-      {/* ================= MANIFESTE ================= */}
-      <div className="manifesto-band">
-        <p>« Chaque pièce est unique. <em>Comme vous.</em> »</p>
-      </div>
-
-      {/* ================= BANDE DE MOTIFS ================= */}
+      {/* ================= BANDE DE MOTIFS =================
+          Placée juste après la vague (même teinte chocolat) pour une
+          continuité visuelle, avant de passer au fond clair du manifeste. */}
       <div className="motif-strip">
         <div className="motif-track">
           {[...motifItems, ...motifItems, ...motifItems].map((m, i) => (
@@ -237,6 +238,11 @@ export default function Home({ goTo, addToCart }) {
             </span>
           ))}
         </div>
+      </div>
+
+      {/* ================= MANIFESTE ================= */}
+      <div className="manifesto-band">
+        <p>« Chaque pièce est unique. <em>Comme vous.</em> »</p>
       </div>
 
       {/* ================= LES PIÈCES SIGNATURE ================= */}
@@ -418,7 +424,7 @@ export default function Home({ goTo, addToCart }) {
             </motion.p>
 
             <motion.div variants={reveal}>
-              <button className="btn-outline-light" onClick={() => goTo('collection')}>
+              <button className="btn-outline-light" onClick={() => goTo('histoire')}>
                 <span>Notre histoire</span>
                 <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                   <path d="M5 12h14M12 5l7 7-7 7" />

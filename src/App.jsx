@@ -9,6 +9,7 @@ import Formations from './pages/Formations';
 import Collection from './pages/Collection';
 import Commander from './pages/Commander';
 import Inscription from './pages/Inscription';
+import About from './pages/About';
 
 import useReveal from './hooks/useReveal';
 
@@ -294,6 +295,13 @@ export default function App() {
           goBack={goBack}
           formation={formation}
           showToast={showToast}
+        />
+      )}
+
+      {page === 'histoire' && (
+        <About
+          goTo={goTo}
+          goBack={goBack}
         />
       )}
     </>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import BackButton from '../components/BackButton';
 import { FooterSimple } from '../components/Footer';
 import { collectionItems } from '../data';
@@ -20,6 +21,10 @@ export default function Collection({
 }) {
   const [cat, setCat] = useState('all');
   const [fading, setFading] = useState(false);
+  // Article actuellement survolé (desktop uniquement) : déclenche
+  // l'aperçu flottant en grand, façon story Instagram — sans naviguer
+  // vers une fiche produit.
+  const [hoveredItem, setHoveredItem] = useState(null);
 
   const items =
     cat === 'all'
@@ -142,7 +147,12 @@ export default function Collection({
         }}
       >
         {items.map((item, index) => (
-          <div className="product-card" key={index}>
+          <div
+            className="product-card"
+            key={index}
+            onMouseEnter={() => setHoveredItem(item)}
+            onMouseLeave={() => setHoveredItem(null)}
+          >
             <div className="product-img-wrap">
               <div className="product-placeholder">
                 {item.emoji}
@@ -186,6 +196,44 @@ export default function Collection({
           </div>
         ))}
       </div>
+
+      {/* APERÇU FLOTTANT — position fixe, toujours centré et entier,
+          jamais coupé par la nav ni les bords de l'écran. Desktop
+          uniquement (voir CSS : masqué sous 900px). */}
+      <AnimatePresence>
+        {hoveredItem && (
+          <motion.div
+            className="hover-preview-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <motion.div
+              className="hover-preview-card"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.92 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <div
+                className="hover-preview-media"
+                style={{ background: hoveredItem.bc ? `linear-gradient(135deg, ${hoveredItem.bc}, var(--gold))` : 'linear-gradient(135deg, var(--gold), var(--terracotta))' }}
+              >
+                <span className="hover-preview-emoji">{hoveredItem.emoji}</span>
+                {hoveredItem.badge && (
+                  <span className="hover-preview-badge">{hoveredItem.badge}</span>
+                )}
+              </div>
+              <div className="hover-preview-info">
+                <h3>{hoveredItem.name}</h3>
+                <p>{hoveredItem.desc}</p>
+                <span className="hover-preview-price">{hoveredItem.price}</span>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* CRÉATION SPÉCIALE */}
       <section className="special-request-card">

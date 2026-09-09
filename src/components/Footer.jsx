@@ -71,7 +71,7 @@ export function FooterFull({ goTo }) {
           <ul>
             <li><a href="#" onClick={(e) => { e.preventDefault(); goTo('apropos'); }}>À propos</a></li>
             <li><a href="#" onClick={(e) => { e.preventDefault(); goTo('apropos'); }}>L'atelier</a></li>
-            <li><a href="#" onClick={(e) => { e.preventDefault(); goTo('apropos'); }}>Notre histoire</a></li>
+            <li><a href="#" onClick={(e) => { e.preventDefault(); goTo('histoire'); }}>Notre histoire</a></li>
           </ul>
         </div>
 

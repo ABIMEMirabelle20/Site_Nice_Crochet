@@ -113,7 +113,7 @@ export default function About({ goTo, goBack }) {
 
           <div className="about-values">
             <div className="about-value">
-              <div className="about-value-icon"></div>
+              <div className="about-value-icon">❤️</div>
               <h4>Passion</h4>
               <p>Chaque maille est posée avec amour</p>
             </div>
