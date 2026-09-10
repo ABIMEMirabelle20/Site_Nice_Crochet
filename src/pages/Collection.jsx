@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import BackButton from '../components/BackButton';
 import { FooterSimple } from '../components/Footer';
@@ -24,7 +24,40 @@ export default function Collection({
   // Article actuellement survolé (desktop uniquement) : déclenche
   // l'aperçu flottant en grand, façon story Instagram — sans naviguer
   // vers une fiche produit.
+  // Aperçu déclenché par un appui long tactile (mobile) — l'équivalent
+  // du "survol pour prévisualiser" d'Instagram sur les réels : on
+  // maintient le doigt pour voir la création en grand, on relâche pour
+  // fermer, sans jamais ouvrir de fiche produit.
   const [hoveredItem, setHoveredItem] = useState(null);
+  const pressTimer = useRef(null);
+  const touchStartPos = useRef({ x: 0, y: 0 });
+
+  const handleTouchStart = (item, e) => {
+    const touch = e.touches[0];
+    touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+
+    pressTimer.current = window.setTimeout(() => {
+      setHoveredItem(item);
+    }, 180);
+  };
+
+  const handleTouchMove = (e) => {
+    // Si le doigt bouge (scroll), on annule l'aperçu pour ne pas
+    // gêner le défilement de la page.
+    const touch = e.touches[0];
+    const dx = Math.abs(touch.clientX - touchStartPos.current.x);
+    const dy = Math.abs(touch.clientY - touchStartPos.current.y);
+
+    if (dx > 10 || dy > 10) {
+      clearTimeout(pressTimer.current);
+      setHoveredItem(null);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    clearTimeout(pressTimer.current);
+    setHoveredItem(null);
+  };
 
   const items =
     cat === 'all'
@@ -150,8 +183,10 @@ export default function Collection({
           <div
             className="product-card"
             key={index}
-            onMouseEnter={() => setHoveredItem(item)}
-            onMouseLeave={() => setHoveredItem(null)}
+            onTouchStart={(e) => handleTouchStart(item, e)}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd}
           >
             <div className="product-img-wrap">
               <div className="product-placeholder">

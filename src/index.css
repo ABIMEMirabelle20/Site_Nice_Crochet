@@ -298,7 +298,7 @@ nav.scrolled .nav-brand-sub{ opacity:0; max-height:0; }
   position:relative;
   min-height:90vh;
   display:flex;
-  align-items:flex-start;
+  align-items:center;
   padding:0;
   overflow:hidden;
   background:var(--chocolate);
@@ -337,29 +337,34 @@ nav.scrolled .nav-brand-sub{ opacity:0; max-height:0; }
   width:100%;
   max-width:1300px;
   margin:0 auto;
-  padding:clamp(6.5rem,11vw,8rem) clamp(1.5rem,6vw,5rem) clamp(4.5rem,8vw,6rem);
+  padding:clamp(5.5rem,9vw,7rem) clamp(1.5rem,6vw,5rem) clamp(4.5rem,8vw,6rem);
   color:var(--cream);
 }
 
-.hero2-typewriter-wrap{ margin-bottom:1.1rem; }
+.hero2-typewriter-wrap{ margin-bottom:1.1rem; max-width:100%; }
 .hero2-typewriter{
   display:inline-block;
-  overflow:hidden;
-  white-space:nowrap;
-  border-right:3px solid var(--gold);
-  padding-right:5px;
+  max-width:100%;
+  white-space:normal;
+  overflow-wrap:break-word;
   font-family:var(--ff-display);
   font-style:italic;
   font-weight:500;
-  font-size:clamp(1.8rem,4.4vw,2.8rem);
+  font-size:clamp(1.5rem,4.4vw,2.8rem);
   color:rgba(247,238,224,.92);
-  width:0;
-  animation:heroTyping 2.4s steps(28,end) .5s forwards, heroBlinkCaret .75s step-end infinite;
 }
-@keyframes heroTyping{ from{ width:0; } to{ width:28ch; } }
-@keyframes heroBlinkCaret{ 50%{ border-color:transparent; } }
+.hero2-caret{
+  display:inline-block;
+  width:2px;
+  height:.9em;
+  margin-left:3px;
+  background:var(--gold);
+  vertical-align:-0.1em;
+  animation:heroBlinkCaret .75s step-end infinite;
+}
+@keyframes heroBlinkCaret{ 50%{ opacity:0; } }
 @media (prefers-reduced-motion: reduce){
-  .hero2-typewriter{ animation:none; width:28ch; border-right:none; }
+  .hero2-caret{ animation:none; }
 }
 
 .hero2-title{
@@ -943,9 +948,10 @@ footer::before{
 .hover-preview-info p{ font-size:.85rem; color:var(--muted); margin-bottom:.8rem; }
 .hover-preview-price{ font-family:var(--ff-display-strong); font-weight:600; font-size:1.15rem; color:var(--terracotta); }
 
-@media (max-width:900px){
-  /* Pas de survol tactile fiable sur mobile : l'aperçu reste réservé au desktop. */
-  .hover-preview-overlay{ display:none; }
+@media (hover:hover) and (pointer:fine){
+  /* Desktop (vraie souris) : l'aperçu est réservé au tactile mobile,
+     déclenché par appui long — pas par un simple passage de souris. */
+  .hover-preview-overlay{ display:none !important; }
 }
 .product-img-wrap{overflow:hidden;background:var(--gold);position:relative}
 .product-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .6s var(--ease)}
