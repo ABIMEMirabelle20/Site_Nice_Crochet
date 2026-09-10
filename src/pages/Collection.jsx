@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import BackButton from '../components/BackButton';
 import { FooterSimple } from '../components/Footer';
 import { collectionItems } from '../data';
@@ -21,12 +21,14 @@ export default function Collection({
   const [cat, setCat] = useState('all');
   const [fading, setFading] = useState(false);
   
-  // ÉTAT UNIQUE : identifie la carte agrandie (null = aucune)
+  // ÉTAT POUR LA CARTE AGRANDIE (au lieu de l'aperçu flottant)
   const [expandedId, setExpandedId] = useState(null);
 
-  // Ouvre/ferme la carte cliquée
-  const toggleExpand = (itemName) => {
-    setExpandedId((prev) => (prev === itemName ? null : itemName));
+  // Gestion du clic pour agrandir/réduire
+  const toggleExpand = (item) => {
+    // On utilise une clé unique basée sur le nom de l'item
+    const id = item.name;
+    setExpandedId(prev => (prev === id ? null : id));
   };
 
   const items =
@@ -36,7 +38,7 @@ export default function Collection({
 
   const filterCollection = (key) => {
     setFading(true);
-    setExpandedId(null); // On referme la carte ouverte quand on filtre
+    setExpandedId(null); // On referme toute carte ouverte lors du filtrage
 
     window.setTimeout(() => {
       setCat(key);
@@ -52,11 +54,13 @@ export default function Collection({
   };
 
   const handleAddToCart = (item, e) => {
-    // Empêche le clic d'agrandir la carte
+    // Empêche le clic d'agrandir la carte quand on clique sur le bouton
     if (e) e.stopPropagation();
 
     addToCart({
-      id: `${item.name}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      id: `${item.name}-${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2, 7)}`,
       name: item.name,
       emoji: item.emoji,
       price: item.price,
@@ -121,7 +125,7 @@ export default function Collection({
         </button>
       </div>
 
-      {/* COLLECTION */}
+      {/* COLLECTION — GRILLE */}
       <div
         className="collection-grid"
         id="collectionGrid"
@@ -131,17 +135,19 @@ export default function Collection({
         }}
       >
         {items.map((item, index) => {
-          // Vérifie si CETTE carte est celle qui est agrandie
+          // On vérifie si CETTE carte est celle qui est agrandie
           const isExpanded = expandedId === item.name;
-
+          
           return (
             <div
               className={`product-card ${isExpanded ? 'is-expanded' : ''}`}
               key={index}
-              onClick={() => toggleExpand(item.name)}
+              onClick={() => toggleExpand(item)}
             >
               <div className="product-img-wrap">
-                <div className="product-placeholder">{item.emoji}</div>
+                <div className="product-placeholder">
+                  {item.emoji}
+                </div>
                 {item.badge && (
                   <div className="product-badge" style={{ background: item.bc }}>
                     {item.badge}
@@ -155,6 +161,8 @@ export default function Collection({
                 <div className="product-price">{item.price}</div>
               </div>
 
+              {/* On cache le bouton quand la carte est agrandie, ou on le garde
+                  pour permettre la commande directement depuis l'aperçu */}
               <button
                 className="product-card-btn"
                 onClick={(e) => handleAddToCart(item, e)}
