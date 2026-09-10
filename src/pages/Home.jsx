@@ -198,7 +198,7 @@ export default function Home({ goTo, addToCart }) {
           variants={heroContainer}
         >
           <motion.div className="hero2-typewriter-wrap" variants={heroItem}>
-            <span className="hero2-typewriter">Bienvenue chez Nice Création</span>
+            <span className="hero2-typewriter">Bienvenue chez Nice Création .</span>
           </motion.div>
 
           <motion.h1 className="hero2-title" variants={heroItem}>
