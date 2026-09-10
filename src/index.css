@@ -321,58 +321,133 @@ nav.scrolled .nav-brand-sub{ opacity:0; max-height:0; }
 
 /* Bord inférieur en vague : détoure le hero pour l'enchaîner avec la
    bande de motifs qui suit, plutôt qu'une simple ligne droite. */
-.hero2-wave{
-  position:absolute;
-  left:0; right:0; bottom:-1px;
-  z-index:2;
-  width:100%;
-  height:auto;
-  line-height:0;
-}
-.hero2-wave svg{ display:block; width:100%; height:clamp(36px,6vw,70px); }
+/* =========================================
+   SECTION HERO 2 - CODE DÉFINITIF (V3)
+   ========================================= */
 
-.hero2-content{
-  position:relative;
-  z-index:1;
-  width:100%;
-  max-width:1300px;
-  margin:0 auto;
-  padding:clamp(5.5rem,9vw,7rem) clamp(1.5rem,6vw,5rem) clamp(4.5rem,8vw,6rem);
-  color:var(--cream);
+.hero2 {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  /* CRUCIAL : Force la section à faire TOUTE la hauteur de l'écran */
+  min-height: 100vh; 
+  width: 100%;
+  padding: 0;
 }
 
-.hero2-typewriter-wrap{ margin-bottom:1.2rem; max-width:100%; }
-.hero2-typewriter{
-  display:inline-block;
-  max-width:100%;
-  white-space:normal;
-  overflow-wrap:break-word;
-  font-family:var(--ff-display);
-  font-style:italic;
-  font-weight:500;
-  font-size:clamp(1.9rem,5.4vw,3.4rem);
-  line-height:1.15;
-  color:rgba(247,238,224,.94);
+.hero2-wave {
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  z-index: 2;
+  width: 100%;
+  height: auto;
+  line-height: 0;
 }
 
-.hero2-title{
-  font-family:var(--ff-display-strong);
-  font-weight:700;
-  line-height:.92;
-  color:var(--cream);
-  font-size:clamp(4.1rem,9vw,7.8rem);
-  letter-spacing:-.01em;
-  margin-bottom:1.5rem;
+.hero2-wave svg { 
+  display: block; 
+  width: 100%; 
+  height: clamp(36px, 6vw, 70px); 
 }
-.hero2-title em{ font-style:italic; font-weight:500; color:var(--terracotta); }
 
-.hero2-desc{ font-size:1.2rem; color:rgba(247,238,224,.88); max-width:490px; line-height:1.8; margin-bottom:2.2rem; }
-.hero2-desc strong{ color:var(--gold); font-weight:500; }
+.hero2-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1300px;
+  margin: 0 auto;
+  /* CRUCIAL : Prend toute la hauteur disponible */
+  flex: 1; 
+  display: flex;
+  flex-direction: column;
+  /* CRUCIAL : Pousse automatiquement le premier bloc en haut et le dernier en bas */
+  justify-content: space-between; 
+  
+  /* Padding : espace en haut et en bas */
+  padding: 2rem clamp(1.5rem, 6vw, 5rem) 4rem;
+  color: var(--cream);
+}
 
-.hero2-cta-row{ display:flex; gap:1.2rem; flex-wrap:wrap; align-items:center; margin-top:1.2rem; margin-bottom:1.8rem; }
-.hero2-cta-row .btn{ padding:1.05rem 2.1rem; }
-.hero2-cta-row .btn-fill{ box-shadow:0 18px 40px -14px rgba(0,0,0,.55); }
-.hero2-cta-row .btn-fill:hover{ transform:translateY(-2px); box-shadow:0 22px 46px -14px rgba(0,0,0,.6); }
+/* --- CONTENEUR DU TEXTE (HAUT) --- */
+.hero2-text-block {
+  /* Ce bloc va contenir Bienvenue, Titre et Description */
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- 1. BIENVENUE --- */
+.hero2-typewriter-wrap { 
+  margin-bottom: 2rem; /* ESPACE sous "Bienvenue" */
+  max-width: 100%; 
+}
+
+.hero2-typewriter {
+  display: inline-block;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: break-word;
+  font-family: var(--ff-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(2rem, 8vw, 3.5rem); 
+  line-height: 1.15;
+  color: rgba(247, 238, 224, 0.94);
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+}
+
+/* --- 2. TITRE --- */
+.hero2-title {
+  font-family: var(--ff-display-strong);
+  font-weight: 700;
+  line-height: 0.95;
+  color: var(--cream);
+  font-size: clamp(3rem, 10vw, 5.5rem); 
+  letter-spacing: -0.01em;
+  margin-bottom: 1.5rem; /* ESPACE sous le titre */
+}
+
+.hero2-title em { 
+  font-style: italic; 
+  font-weight: 500; 
+  color: var(--terracotta); 
+}
+
+/* --- 3. DESCRIPTION --- */
+.hero2-desc { 
+  font-size: 1.1rem; 
+  color: rgba(247, 238, 224, 0.88); 
+  max-width: 490px; 
+  line-height: 1.6; 
+  margin-bottom: 2rem; /* ESPACE sous la description */
+}
+
+.hero2-desc strong { 
+  color: var(--gold); 
+  font-weight: 500; 
+}
+
+/* --- 4. BOUTON (EN BAS) --- */
+.hero2-cta-row { 
+  display: flex; 
+  gap: 1.2rem; 
+  flex-wrap: wrap; 
+  align-items: center; 
+  /* Plus besoin de margin-top: auto, le justify-content: space-between s'en charge */
+  margin-top: 2rem; /* Espace minimum de sécurité */
+}
+
+.hero2-cta-row .btn { 
+  padding: 1.05rem 2.1rem; 
+}
+
+.hero2-cta-row .btn-fill { 
+  box-shadow: 0 18px 40px -14px rgba(0, 0, 0, 0.55); 
+}
+
+.hero2-cta-row .btn-fill:hover { 
+  transform: translateY(-2px); 
+  box-shadow: 0 22px 46px -14px rgba(0, 0, 0, 0.6); 
+}
 
 /* "Notre histoire" : bouton clairement visible sur une photo, quel que
    soit son contraste — bordure + fond translucide type verre dépoli. */

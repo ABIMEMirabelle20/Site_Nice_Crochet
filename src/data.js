@@ -67,4 +67,4 @@ export const swatches = [
   { name:'Autre', color:'linear-gradient(135deg,#ff6b6b,#4ecdc4,#95e1d3)' },
 ];
 
-export const WHATSAPP_NUMBER = '22990614396';
+export const WHATSAPP_NUMBER = '22959871071';
