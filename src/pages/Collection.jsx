@@ -24,20 +24,23 @@ export default function Collection({
   // Article actuellement survolé (desktop uniquement) : déclenche
   // l'aperçu flottant en grand, façon story Instagram — sans naviguer
   // vers une fiche produit.
-  // Aperçu déclenché par un appui long tactile (mobile) — l'équivalent
-  // du "survol pour prévisualiser" d'Instagram sur les réels : on
-  // maintient le doigt pour voir la création en grand, on relâche pour
-  // fermer, sans jamais ouvrir de fiche produit.
-  const [hoveredItem, setHoveredItem] = useState(null);
+  // Aperçu déclenché par un appui long tactile (mobile) — affiché à
+  // l'endroit même de la carte touchée (pas centré sur l'écran),
+  // l'équivalent du "survol pour prévisualiser" d'Instagram sur les
+  // réels : on maintient le doigt pour voir la création en grand à sa
+  // position, on relâche pour fermer, sans jamais ouvrir de fiche produit.
+  const [preview, setPreview] = useState(null); // { item, rect }
   const pressTimer = useRef(null);
   const touchStartPos = useRef({ x: 0, y: 0 });
+  const pendingRectRef = useRef(null);
 
   const handleTouchStart = (item, e) => {
     const touch = e.touches[0];
     touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+    pendingRectRef.current = e.currentTarget.getBoundingClientRect();
 
     pressTimer.current = window.setTimeout(() => {
-      setHoveredItem(item);
+      setPreview({ item, rect: pendingRectRef.current });
     }, 180);
   };
 
@@ -50,13 +53,37 @@ export default function Collection({
 
     if (dx > 10 || dy > 10) {
       clearTimeout(pressTimer.current);
-      setHoveredItem(null);
+      setPreview(null);
     }
   };
 
   const handleTouchEnd = () => {
     clearTimeout(pressTimer.current);
-    setHoveredItem(null);
+    setPreview(null);
+  };
+
+  // Calcule la position/taille de l'aperçu à partir de la carte
+  // touchée : agrandi (×1.6) mais ancré à sa position d'origine, avec
+  // une marge de sécurité pour ne jamais sortir de l'écran.
+  const getPreviewStyle = (rect) => {
+    if (!rect || typeof window === 'undefined') return {};
+
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const margin = 12;
+    const navSafeTop = 84;
+
+    const width = Math.min(rect.width * 1.6, vw * 0.82, 340);
+    const estimatedHeight = width * 1.25 + 110;
+    const centerX = rect.left + rect.width / 2;
+
+    let left = centerX - width / 2;
+    left = Math.max(margin, Math.min(left, vw - width - margin));
+
+    let top = rect.top - 16;
+    top = Math.max(navSafeTop, Math.min(top, vh - estimatedHeight - margin));
+
+    return { left: `${left}px`, top: `${top}px`, width: `${width}px` };
   };
 
   const items =
@@ -232,38 +259,38 @@ export default function Collection({
         ))}
       </div>
 
-      {/* APERÇU FLOTTANT — position fixe, toujours centré et entier,
-          jamais coupé par la nav ni les bords de l'écran. Desktop
-          uniquement (voir CSS : masqué sous 900px). */}
+      {/* APERÇU TACTILE — s'affiche à l'endroit de la carte touchée
+          (pas centré sur l'écran), appui long sur mobile uniquement. */}
       <AnimatePresence>
-        {hoveredItem && (
+        {preview && (
           <motion.div
             className="hover-preview-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.15 }}
           >
             <motion.div
               className="hover-preview-card"
-              initial={{ opacity: 0, scale: 0.9 }}
+              style={getPreviewStyle(preview.rect)}
+              initial={{ opacity: 0, scale: 0.85 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.92 }}
-              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
             >
               <div
                 className="hover-preview-media"
-                style={{ background: hoveredItem.bc ? `linear-gradient(135deg, ${hoveredItem.bc}, var(--gold))` : 'linear-gradient(135deg, var(--gold), var(--terracotta))' }}
+                style={{ background: preview.item.bc ? `linear-gradient(135deg, ${preview.item.bc}, var(--gold))` : 'linear-gradient(135deg, var(--gold), var(--terracotta))' }}
               >
-                <span className="hover-preview-emoji">{hoveredItem.emoji}</span>
-                {hoveredItem.badge && (
-                  <span className="hover-preview-badge">{hoveredItem.badge}</span>
+                <span className="hover-preview-emoji">{preview.item.emoji}</span>
+                {preview.item.badge && (
+                  <span className="hover-preview-badge">{preview.item.badge}</span>
                 )}
               </div>
               <div className="hover-preview-info">
-                <h3>{hoveredItem.name}</h3>
-                <p>{hoveredItem.desc}</p>
-                <span className="hover-preview-price">{hoveredItem.price}</span>
+                <h3>{preview.item.name}</h3>
+                <p>{preview.item.desc}</p>
+                <span className="hover-preview-price">{preview.item.price}</span>
               </div>
             </motion.div>
           </motion.div>

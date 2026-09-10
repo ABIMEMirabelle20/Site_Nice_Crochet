@@ -136,22 +136,6 @@ export default function Home({ goTo, addToCart }) {
     return () => clearInterval(id);
   }, []);
 
-  // Effet "machine à écrire" pour "Bienvenue chez Nice Création",
-  // piloté en JS lettre par lettre : la largeur suit naturellement le
-  // texte déjà tapé, donc jamais de coupure ni de débordement, quelle
-  // que soit la taille d'écran ou la police.
-  const welcomeText = 'Bienvenue chez Nice Création';
-  const [typedWelcome, setTypedWelcome] = useState('');
-
-  useEffect(() => {
-    let i = 0;
-    const id = setInterval(() => {
-      i += 1;
-      setTypedWelcome(welcomeText.slice(0, i));
-      if (i >= welcomeText.length) clearInterval(id);
-    }, 70);
-    return () => clearInterval(id);
-  }, []);
 
   const handleAddToCart = (product) => {
     if (!addToCart) {
@@ -214,11 +198,11 @@ export default function Home({ goTo, addToCart }) {
           variants={heroContainer}
         >
           <motion.div className="hero2-typewriter-wrap" variants={heroItem}>
-            <span className="hero2-typewriter">{typedWelcome}<span className="hero2-caret" /></span>
+            <span className="hero2-typewriter">Bienvenue chez Nice Création</span>
           </motion.div>
 
           <motion.h1 className="hero2-title" variants={heroItem}>
-            L'art du crochet,<br /><em>réinventé.</em>
+            L'art du fait main,<br /><em>réinventé.</em>
           </motion.h1>
 
           <motion.p className="hero2-desc" variants={heroItem}>
