@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import BackButton from '../components/BackButton';
 import { FooterSimple } from '../components/Footer';
 import { collectionItems } from '../data';
@@ -21,69 +21,16 @@ export default function Collection({
 }) {
   const [cat, setCat] = useState('all');
   const [fading, setFading] = useState(false);
-  // Article actuellement survolé (desktop uniquement) : déclenche
-  // l'aperçu flottant en grand, façon story Instagram — sans naviguer
-  // vers une fiche produit.
-  // Aperçu déclenché par un appui long tactile (mobile) — affiché à
-  // l'endroit même de la carte touchée (pas centré sur l'écran),
-  // l'équivalent du "survol pour prévisualiser" d'Instagram sur les
-  // réels : on maintient le doigt pour voir la création en grand à sa
-  // position, on relâche pour fermer, sans jamais ouvrir de fiche produit.
-  const [preview, setPreview] = useState(null); // { item, rect }
-  const pressTimer = useRef(null);
-  const touchStartPos = useRef({ x: 0, y: 0 });
-  const pendingRectRef = useRef(null);
 
-  const handleTouchStart = (item, e) => {
-    const touch = e.touches[0];
-    touchStartPos.current = { x: touch.clientX, y: touch.clientY };
-    pendingRectRef.current = e.currentTarget.getBoundingClientRect();
+  // Expansion "in-place" : la carte cliquée s'agrandit depuis sa
+  // propre position dans la grille (via l'animation layout de Framer
+  // Motion, qui anime aussi le repositionnement fluide des cartes
+  // voisines) — jamais de déplacement en haut de page, jamais
+  // d'aperçu flottant séparé. Une seule carte ouverte à la fois.
+  const [expandedName, setExpandedName] = useState(null);
 
-    pressTimer.current = window.setTimeout(() => {
-      setPreview({ item, rect: pendingRectRef.current });
-    }, 180);
-  };
-
-  const handleTouchMove = (e) => {
-    // Si le doigt bouge (scroll), on annule l'aperçu pour ne pas
-    // gêner le défilement de la page.
-    const touch = e.touches[0];
-    const dx = Math.abs(touch.clientX - touchStartPos.current.x);
-    const dy = Math.abs(touch.clientY - touchStartPos.current.y);
-
-    if (dx > 10 || dy > 10) {
-      clearTimeout(pressTimer.current);
-      setPreview(null);
-    }
-  };
-
-  const handleTouchEnd = () => {
-    clearTimeout(pressTimer.current);
-    setPreview(null);
-  };
-
-  // Calcule la position/taille de l'aperçu à partir de la carte
-  // touchée : agrandi (×1.6) mais ancré à sa position d'origine, avec
-  // une marge de sécurité pour ne jamais sortir de l'écran.
-  const getPreviewStyle = (rect) => {
-    if (!rect || typeof window === 'undefined') return {};
-
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const margin = 12;
-    const navSafeTop = 84;
-
-    const width = Math.min(rect.width * 1.6, vw * 0.82, 340);
-    const estimatedHeight = width * 1.25 + 110;
-    const centerX = rect.left + rect.width / 2;
-
-    let left = centerX - width / 2;
-    left = Math.max(margin, Math.min(left, vw - width - margin));
-
-    let top = rect.top - 16;
-    top = Math.max(navSafeTop, Math.min(top, vh - estimatedHeight - margin));
-
-    return { left: `${left}px`, top: `${top}px`, width: `${width}px` };
+  const toggleExpand = (name) => {
+    setExpandedName((prev) => (prev === name ? null : name));
   };
 
   const items =
@@ -93,6 +40,7 @@ export default function Collection({
 
   const filterCollection = (key) => {
     setFading(true);
+    setExpandedName(null);
 
     window.setTimeout(() => {
       setCat(key);
@@ -110,7 +58,9 @@ export default function Collection({
     }, 50);
   };
 
-  const handleAddToCart = (item) => {
+  const handleAddToCart = (item, e) => {
+    e.stopPropagation();
+
     addToCart({
       id: `${item.name}-${Date.now()}-${Math.random()
         .toString(36)
@@ -206,96 +156,72 @@ export default function Collection({
           transition: 'opacity .2s ease',
         }}
       >
-        {items.map((item, index) => (
-          <div
-            className="product-card"
-            key={index}
-            onTouchStart={(e) => handleTouchStart(item, e)}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onTouchCancel={handleTouchEnd}
-          >
-            <div className="product-img-wrap">
-              <div className="product-placeholder">
-                {item.emoji}
-              </div>
+        {items.map((item) => {
+          const isExpanded = expandedName === item.name;
 
-              {item.badge && (
-                <div
-                  className="product-badge"
-                  style={{ background: item.bc }}
-                >
-                  {item.badge}
-                </div>
-              )}
-            </div>
-
-            <div className="product-info">
-              <h3>{item.name}</h3>
-              <p>{item.desc}</p>
-              <div className="product-price">
-                {item.price}
-              </div>
-            </div>
-
-            <button
-              className="product-card-btn"
-              onClick={() => handleAddToCart(item)}
-            >
-              <span>Commander cette pièce</span>
-
-              <svg
-                width="14"
-                height="14"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                viewBox="0 0 24 24"
-              >
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-        ))}
-      </div>
-
-      {/* APERÇU TACTILE — s'affiche à l'endroit de la carte touchée
-          (pas centré sur l'écran), appui long sur mobile uniquement. */}
-      <AnimatePresence>
-        {preview && (
-          <motion.div
-            className="hover-preview-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-          >
+          return (
             <motion.div
-              className="hover-preview-card"
-              style={getPreviewStyle(preview.rect)}
-              initial={{ opacity: 0, scale: 0.85 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              layout
+              transition={{ layout: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } }}
+              className={`product-card ${isExpanded ? 'is-expanded' : ''}`}
+              key={item.name}
+              onClick={() => toggleExpand(item.name)}
             >
-              <div
-                className="hover-preview-media"
-                style={{ background: preview.item.bc ? `linear-gradient(135deg, ${preview.item.bc}, var(--gold))` : 'linear-gradient(135deg, var(--gold), var(--terracotta))' }}
-              >
-                <span className="hover-preview-emoji">{preview.item.emoji}</span>
-                {preview.item.badge && (
-                  <span className="hover-preview-badge">{preview.item.badge}</span>
+              <div className="product-img-wrap">
+                <div className="product-placeholder">
+                  {item.emoji}
+                </div>
+
+                {item.badge && (
+                  <div
+                    className="product-badge"
+                    style={{ background: item.bc }}
+                  >
+                    {item.badge}
+                  </div>
+                )}
+
+                {isExpanded && (
+                  <button
+                    type="button"
+                    className="product-card-close"
+                    aria-label="Réduire"
+                    onClick={(e) => { e.stopPropagation(); setExpandedName(null); }}
+                  >
+                    ✕
+                  </button>
                 )}
               </div>
-              <div className="hover-preview-info">
-                <h3>{preview.item.name}</h3>
-                <p>{preview.item.desc}</p>
-                <span className="hover-preview-price">{preview.item.price}</span>
+
+              <div className="product-info">
+                <h3>{item.name}</h3>
+                <p>{item.desc}</p>
+                <div className="product-price">
+                  {item.price}
+                </div>
               </div>
+
+              <button
+                className="product-card-btn"
+                onClick={(e) => handleAddToCart(item, e)}
+              >
+                <span>Commander cette pièce</span>
+
+                <svg
+                  width="14"
+                  height="14"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          );
+        })}
+      </div>
 
       {/* CRÉATION SPÉCIALE */}
       <section className="special-request-card">
