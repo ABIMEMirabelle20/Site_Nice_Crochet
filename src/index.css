@@ -295,76 +295,91 @@ nav.scrolled .nav-brand-sub{ opacity:0; max-height:0; }
    ═══════════════════════════════════════════════════════ */
 
 .hero2{
-  background:var(--cream);
-  padding:clamp(6.5rem,10vw,8.5rem) clamp(1.5rem,6vw,5rem) clamp(3.5rem,7vw,5rem);
+  position:relative;
+  min-height:90vh;
+  display:flex;
+  align-items:center;
+  padding:0;
+  overflow:hidden;
+  background:var(--chocolate);
 }
+
+/* Image de fond plein cadre : occupe toute la section. Toutes les
+   images sont empilées et montées en permanence côté JSX ; seule
+   l'opacité change (crossfade), donc jamais de flash de couleur unie
+   entre deux photos. */
+.hero2-bg{ position:absolute; inset:0; z-index:0; }
+.hero2-bg img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:50% 85%; }
+@media (min-width:1000px){
+  .hero2-bg img{ object-position:50% 42%; }
+}
+.hero2-bg::after{
+  content:'';
+  position:absolute; inset:0;
+  background:linear-gradient(180deg, rgba(58,33,23,.55) 0%, rgba(58,33,23,.3) 30%, rgba(58,33,23,.42) 60%, rgba(58,33,23,.85) 100%);
+}
+
+/* Bord inférieur en vague : détoure le hero pour l'enchaîner avec la
+   bande de motifs qui suit, plutôt qu'une simple ligne droite. */
+.hero2-wave{
+  position:absolute;
+  left:0; right:0; bottom:-1px;
+  z-index:2;
+  width:100%;
+  height:auto;
+  line-height:0;
+}
+.hero2-wave svg{ display:block; width:100%; height:clamp(36px,6vw,70px); }
 
 .hero2-content{
+  position:relative;
+  z-index:1;
+  width:100%;
   max-width:1300px;
   margin:0 auto;
-  display:grid;
-  grid-template-columns:1.05fr .95fr;
-  gap:clamp(2.5rem,5vw,4.5rem);
-  align-items:center;
+  padding:clamp(5.5rem,9vw,7rem) clamp(1.5rem,6vw,5rem) clamp(4.5rem,8vw,6rem);
+  color:var(--cream);
 }
 
+/* Hiérarchie du texte : accroche → titre → description → CTA, avec
+   des espacements progressifs cohérents (plus resserré en haut du
+   bloc, plus aéré à mesure qu'on descend vers l'action). */
+.hero2-typewriter-wrap{ margin-bottom:1rem; max-width:100%; }
 .hero2-typewriter{
   display:inline-block;
   max-width:100%;
+  white-space:normal;
+  overflow-wrap:break-word;
   font-family:var(--ff-display);
   font-style:italic;
   font-weight:500;
-  font-size:clamp(1.25rem,2.4vw,1.65rem);
+  font-size:clamp(1.3rem,3vw,1.85rem);
   line-height:1.3;
-  color:var(--chocolate-light);
-  margin-bottom:.8rem;
+  color:rgba(247,238,224,.88);
+  letter-spacing:.01em;
 }
 
 .hero2-title{
   font-family:var(--ff-display-strong);
   font-weight:700;
-  line-height:1.02;
-  color:var(--chocolate);
-  font-size:clamp(2.8rem,5.4vw,4.6rem);
+  line-height:1;
+  color:var(--cream);
+  font-size:clamp(3rem,7vw,6.2rem);
   letter-spacing:-.01em;
-  margin-bottom:1.3rem;
+  margin-bottom:1.4rem;
 }
 .hero2-title em{ font-style:italic; font-weight:500; color:var(--terracotta); }
 
-.hero2-desc{ font-size:1.05rem; color:var(--muted); max-width:460px; line-height:1.8; margin-bottom:2rem; }
-.hero2-desc strong{ color:var(--chocolate-light); font-weight:600; }
+.hero2-desc{ font-size:1.1rem; color:rgba(247,238,224,.85); max-width:480px; line-height:1.75; margin-bottom:2.2rem; }
+.hero2-desc strong{ color:var(--gold); font-weight:500; }
 
 .hero2-cta-row{ display:flex; gap:1.2rem; flex-wrap:wrap; align-items:center; }
 .hero2-cta-row .btn{ padding:1.05rem 2.1rem; }
-.hero2-cta-row .btn-fill{ box-shadow:0 18px 40px -18px rgba(58,33,23,.5); }
-.hero2-cta-row .btn-fill:hover{ transform:translateY(-2px); box-shadow:0 22px 46px -16px rgba(58,33,23,.55); }
-
-/* Image encadrée à ratio fixe : le cadrage ne dépend plus jamais du
-   ratio réel de la photo ni de la hauteur du viewport — la boîte
-   décide, l'image s'y adapte via object-fit:cover. Jamais étirée,
-   jamais excessive sur mobile, jamais zoomée sur desktop. */
-.hero2-visual{ width:100%; }
-.hero2-frame{
-  position:relative;
-  aspect-ratio:4/5;
-  border-radius:28px;
-  overflow:hidden;
-  box-shadow:0 40px 80px -28px rgba(58,33,23,.4);
-}
-.hero2-frame img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 30%; }
-.hero2-frame-badge{
-  position:absolute; bottom:1.1rem; left:1.1rem;
-  background:rgba(255,253,246,.92);
-  backdrop-filter:blur(6px);
-  padding:.55rem 1rem;
-  border-radius:999px;
-  font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; font-weight:600;
-  color:var(--chocolate);
-}
+.hero2-cta-row .btn-fill{ box-shadow:0 18px 40px -14px rgba(0,0,0,.55); }
+.hero2-cta-row .btn-fill:hover{ transform:translateY(-2px); box-shadow:0 22px 46px -14px rgba(0,0,0,.6); }
 
 /* "Notre histoire" : bouton clairement visible sur une photo, quel que
-   soit son contraste — bordure + fond translucide type verre dépoli.
-   (utilisé dans la section "Qui nous sommes", fond sombre) */
+   soit son contraste — bordure + fond translucide type verre dépoli. */
 .btn-outline-light{
   display:inline-flex;
   align-items:center;
@@ -384,17 +399,15 @@ nav.scrolled .nav-brand-sub{ opacity:0; max-height:0; }
 .btn-outline-light:hover{ background:rgba(247,238,224,.9); color:var(--chocolate); border-color:rgba(247,238,224,.9); transform:translateY(-2px); }
 
 @media (max-width:1000px){
-  .hero2-content{ grid-template-columns:1fr; }
-  .hero2-text{ order:1; }
-  .hero2-visual{ order:2; max-width:420px; margin:0 auto; }
-  .hero2-frame{ aspect-ratio:4/3; }
+  .hero2-title{ font-size:clamp(2.9rem,9vw,4.6rem); }
 }
 @media (max-width:640px){
-  .hero2{ padding:5.5rem 1.1rem 3rem; }
-  .hero2-title{ font-size:clamp(2.2rem,9vw,2.8rem); }
-  .hero2-desc{ max-width:100%; font-size:.95rem; }
+  .hero2{ min-height:auto; }
+  .hero2-content{ padding:5.5rem 1.1rem 3.5rem; }
+  .hero2-typewriter{ font-size:clamp(1.15rem,5.4vw,1.5rem); margin-bottom:.7rem; }
+  .hero2-title{ font-size:clamp(2.4rem,11vw,3.2rem); margin-bottom:1rem; }
+  .hero2-desc{ max-width:100%; font-size:.95rem; line-height:1.7; }
   .hero2-cta-row .btn{ width:100%; justify-content:center; }
-  .hero2-frame{ aspect-ratio:1/1; }
 }
 
 /* ═══════════════════════════════════════════════════════

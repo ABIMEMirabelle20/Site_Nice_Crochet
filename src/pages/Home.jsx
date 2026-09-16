@@ -171,66 +171,65 @@ export default function Home({ goTo, addToCart }) {
   return (
     <div className="page active" id="page-accueil">
 
-      {/* ================= HERO =================
-          Image encadrée à ratio contrôlé (jamais plein cadre) : le
-          cadrage de la photo ne détermine plus la disposition de la
-          page. Texte et visuel sont deux blocs indépendants, chacun
-          avec sa propre hiérarchie et son propre espacement. */}
+      {/* ================= HERO ================= */}
       <section
         className="hero2 nav-section"
-        data-nav-theme="cream"
-        data-nav-text="dark"
+        data-nav-theme="chocolate"
+        data-nav-text="light"
         data-nav-section-id="accueil"
       >
+        <div className="hero2-bg">
+          {heroImages.map((src, i) => (
+            <motion.img
+              key={src}
+              src={src}
+              alt="Création Nice Création"
+              initial={false}
+              animate={{ opacity: i === heroIdx ? 1 : 0 }}
+              transition={{ duration: 2.2, ease: 'easeInOut' }}
+            />
+          ))}
+        </div>
+
         <motion.div
           className="hero2-content"
           initial="hidden"
           animate="visible"
           variants={heroContainer}
         >
-          <div className="hero2-text">
-            <motion.span className="hero2-typewriter" variants={heroItem}>
-              Bienvenue chez Nice Création
-            </motion.span>
+          <motion.div className="hero2-typewriter-wrap" variants={heroItem}>
+            <span className="hero2-typewriter">Bienvenue chez Nice Création .</span>
+          </motion.div>
 
-            <motion.h1 className="hero2-title" variants={heroItem}>
-              L'art du crochet,<br /><em>réinventé.</em>
-            </motion.h1>
+          <motion.h1 className="hero2-title" variants={heroItem}>
+            L'art du fait main,<br /><em>réinventé.</em>
+          </motion.h1>
 
-            <motion.p className="hero2-desc" variants={heroItem}>
-              Créations faites main au Bénin. Des pièces singulières,
-              pensées pour durer.
-            </motion.p>
+          <motion.p className="hero2-desc" variants={heroItem}>
+            Créations faites main au Bénin. Des pièces singulières,
+            pensées pour durer.
+          </motion.p>
 
-            <motion.div className="hero2-cta-row" variants={heroItem}>
-              <button className="btn btn-fill" onClick={() => goTo('collection')}>
-                <span>Découvrir la collection</span>
-                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </button>
-            </motion.div>
-          </div>
-
-          <motion.div className="hero2-visual" variants={heroItem}>
-            <div className="hero2-frame">
-              {heroImages.map((src, i) => (
-                <motion.img
-                  key={src}
-                  src={src}
-                  alt="Création Nice Création"
-                  initial={false}
-                  animate={{ opacity: i === heroIdx ? 1 : 0 }}
-                  transition={{ duration: 2, ease: 'easeInOut' }}
-                />
-              ))}
-              <span className="hero2-frame-badge">100% fait main</span>
-            </div>
+          <motion.div className="hero2-cta-row" variants={heroItem}>
+            <button className="btn btn-fill" onClick={() => goTo('collection')}>
+              <span>Découvrir la collection</span>
+              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </button>
           </motion.div>
         </motion.div>
+
+        <div className="hero2-wave" aria-hidden="true">
+          <svg viewBox="0 0 1440 80" preserveAspectRatio="none">
+            <path d="M0,40 Q720,90 1440,40 L1440,80 L0,80 Z" fill="#3A2117" />
+          </svg>
+        </div>
       </section>
 
-      {/* ================= BANDE DE MOTIFS ================= */}
+      {/* ================= BANDE DE MOTIFS =================
+          Placée juste après la vague (même teinte chocolat) pour une
+          continuité visuelle, avant de passer au fond clair du manifeste. */}
       <div className="motif-strip">
         <div className="motif-track">
           {[...motifItems, ...motifItems, ...motifItems].map((m, i) => (
