@@ -3,11 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import logo from "../ressources/Logo.jpeg";
 import { WHATSAPP_NUMBER } from '../data';
 
-// Nav desktop : inchangée, pour ne rien casser de la détection de
-// section active existante.
+// Nav desktop : "À propos" pointe désormais vers la même page dédiée
+// ("histoire") que "Notre histoire" dans le menu mobile — même id,
+// donc même destination et même surbrillance active des deux côtés.
 const LINKS = [
   { id: 'accueil', label: 'Accueil' },
-  { id: 'apropos', label: 'À propos' },
+  { id: 'histoire', label: 'À propos' },
   { id: 'formations', label: 'Formations' },
   { id: 'collection', label: 'Collection' },
   { id: 'commander', label: 'Commander' },
@@ -55,37 +56,18 @@ const menuItem = {
 export default function Navbar({ page, goTo, cartCount = 0, onCartClick }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState('accueil');
+
+  // La surbrillance du lien actif suit directement la page affichée —
+  // "À propos" mène maintenant à une page dédiée ("histoire"), il n'y
+  // a donc plus besoin de détecter une section au scroll sur l'accueil.
+  const activeSection = page;
 
   useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 40);
-
-      if (page !== 'accueil') return;
-
-      const el = document.getElementById('apropos-section');
-      if (!el) {
-        setActiveSection('accueil');
-        return;
-      }
-
-      const rect = el.getBoundingClientRect();
-      const navOffset = 110;
-      const isInSection = rect.top <= navOffset && rect.bottom > navOffset;
-      setActiveSection(isInSection ? 'apropos' : 'accueil');
-    };
-
+    const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener('scroll', onScroll);
     onScroll();
-
     return () => window.removeEventListener('scroll', onScroll);
-  }, [page]);
-
-  useEffect(() => {
-    if (page !== 'accueil') {
-      setActiveSection(page);
-    }
-  }, [page]);
+  }, []);
 
   // Empêche le scroll du body pendant que le menu plein écran est ouvert.
   useEffect(() => {
@@ -99,7 +81,6 @@ export default function Navbar({ page, goTo, cartCount = 0, onCartClick }) {
       return;
     }
 
-    setActiveSection('accueil');
     goTo('accueil');
 
     requestAnimationFrame(() => {
@@ -111,11 +92,6 @@ export default function Navbar({ page, goTo, cartCount = 0, onCartClick }) {
 
   const handleNav = (id) => {
     setMobileOpen(false);
-
-    if (id === 'apropos') {
-      scrollToSection('apropos-section');
-      return;
-    }
 
     if (id === 'suremesure') {
       scrollToSection('suremesure-section');
