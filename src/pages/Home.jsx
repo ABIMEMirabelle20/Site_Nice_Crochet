@@ -142,9 +142,18 @@ const heroBadgeContainer = {
   visible: { transition: { staggerChildren: 0.15, delayChildren: 0.55 } }
 };
 const heroBadgeItem = {
-  hidden: { opacity: 0, y: 20, scale: 0.85 },
-  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }
+  hidden: { opacity: 0, y: 20, scale: 0.85, rotate: 0 },
+  visible: (rotate) => ({
+    opacity: 1, y: 0, scale: 1, rotate,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+  }),
 };
+// Rotation finale par badge (même ordre que heroBadges) : posée ici,
+// via Framer Motion, plutôt qu'en CSS — le `transform` inline que
+// Framer Motion applique pour l'entrée (y, scale) écraserait sinon
+// toute rotation déclarée séparément en feuille de style sur le même
+// élément.
+const heroBadgeRotations = [-4, 3, -2];
 
 export default function Home({ goTo, addToCart }) {
   const trackRef = useRef(null);
@@ -200,7 +209,12 @@ export default function Home({ goTo, addToCart }) {
         data-nav-text="light"
         data-nav-section-id="accueil"
       >
-        <div className="hero2-bg">
+        <motion.div
+          className="hero2-bg"
+          initial={{ opacity: 0, y: 30, scale: 1.04 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+        >
           {heroImages.map((src, i) => (
             <motion.img
               key={src}
@@ -211,7 +225,7 @@ export default function Home({ goTo, addToCart }) {
               transition={{ duration: 2.2, ease: 'easeInOut' }}
             />
           ))}
-        </div>
+        </motion.div>
 
         <motion.div
           className="hero2-content"
@@ -244,21 +258,38 @@ export default function Home({ goTo, addToCart }) {
 
         {/* Badges flottants façon "Trilee / Winzy" : stats posées sur
             la photo, légèrement inclinées. Masqués sous 640px (le
-            motif-strip juste en dessous porte déjà ces informations). */}
+            motif-strip juste en dessous porte déjà ces informations).
+            Deux animations superposées mais indépendantes :
+            - l'enveloppe (.hero-badge) gère l'entrée en cascade
+              (fade-in + slide-up), une seule fois au chargement ;
+            - la carte interne (.hero-badge-card) démarre ensuite un
+              flottement vertical infini, doux et continu. */}
         <motion.div
           className="hero-badges"
           initial="hidden"
           animate="visible"
           variants={heroBadgeContainer}
         >
-          {heroBadges.map((b) => (
+          {heroBadges.map((b, i) => (
             <motion.div
               className={`hero-badge hero-badge--${b.key}`}
               key={b.key}
+              custom={heroBadgeRotations[i]}
               variants={heroBadgeItem}
             >
-              <span className="hero-badge-value">{b.value}</span>
-              <span className="hero-badge-label">{b.label}</span>
+              <motion.div
+                className="hero-badge-card"
+                animate={{ y: [0, -8, 0] }}
+                transition={{
+                  duration: 3 + i * 0.4,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                  delay: 0.9 + i * 0.25,
+                }}
+              >
+                <span className="hero-badge-value">{b.value}</span>
+                <span className="hero-badge-label">{b.label}</span>
+              </motion.div>
             </motion.div>
           ))}
         </motion.div>

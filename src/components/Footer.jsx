@@ -48,7 +48,7 @@ export function FooterFull({ goTo }) {
       <div className="footer-top">
         <div className="footer-brand">
           <div className="footer-brand-name">Nice <em>Création</em></div>
-          <p>L'art du crochet, réinventé.</p>
+          <p>L'art du fait main, réinventé.</p>
           <div className="footer-socials">
             <a href="https://www.facebook.com/share/19QgBjfC1H/" className="social-btn" aria-label="Facebook" target="_blank" rel="noreferrer"><IconFacebook /></a>
             <a href="https://www.instagram.com/nice.creation1?igsh=Z3AxdHhsaHE4Mjdv" className="social-btn" aria-label="Instagram" target="_blank" rel="noreferrer"><IconInstagram /></a>
