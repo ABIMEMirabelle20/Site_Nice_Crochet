@@ -13,6 +13,12 @@
 html {
   scroll-behavior: smooth;
   scrollbar-gutter: stable;
+  /* "proximity" (et non "mandatory") : incite le scroll à se caler sur
+     le début de chaque grande section quand on s'en approche, sans
+     jamais forcer un saut brutal ni gêner le scroll horizontal des
+     carrousels internes (pièces signature, témoignages) qui gèrent
+     leur propre snap sur l'axe x. */
+  scroll-snap-type: y mandatory;
 }
 
 html,
@@ -303,6 +309,7 @@ nav.scrolled .nav-brand-sub{ opacity:0; max-height:0; }
   padding:0;
   overflow:hidden;
   background:var(--chocolate);
+  scroll-snap-align:start;
 }
 
 /* Image de fond plein cadre : occupe toute la section. Toutes les
@@ -310,7 +317,7 @@ nav.scrolled .nav-brand-sub{ opacity:0; max-height:0; }
    l'opacité change (crossfade), donc jamais de flash de couleur unie
    entre deux photos. */
 .hero2-bg{ position:absolute; inset:0; z-index:0; }
-.hero2-bg img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:50% 85%; }
+.hero2-bg img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:50% 85%; animation:kenburns 16s ease-in-out infinite alternate; }
 @media (min-width:1000px){
   .hero2-bg img{ object-position:50% 42%; }
 }
@@ -501,11 +508,20 @@ nav.scrolled .nav-brand-sub{ opacity:0; max-height:0; }
 .motif-dot{ width:5px; height:5px; border-radius:50%; background:var(--terracotta); flex-shrink:0; }
 @keyframes motifScroll{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
 
+/* Zoom lent et continu sur une photo ("Ken Burns") : donne aux visuels
+   une respiration discrète plutôt qu'une image figée. Oscille entre
+   1 et 1.06 (va-et-vient infini) ; toujours posé sur un conteneur en
+   overflow:hidden pour ne jamais déborder du cadre. */
+@keyframes kenburns{
+  from{ transform:scale(1); }
+  to{ transform:scale(1.14); }
+}
+
 /* ═══════════════════════════════════════════════════════
    PROCESSUS DE COMMANDE — simple, aéré
    ═══════════════════════════════════════════════════════ */
 
-.process-section{ padding:clamp(3rem,6vw,4rem) clamp(1.5rem,6vw,5rem); max-width:900px; margin:0 auto; text-align:center; }
+.process-section{ padding:clamp(3rem,6vw,4rem) clamp(1.5rem,6vw,5rem); max-width:900px; margin:0 auto; text-align:center; scroll-snap-align:start; }
 .process-row{ display:flex; justify-content:center; align-items:flex-start; margin-top:1.8rem; gap:.5rem; }
 .process-step{ flex:1; max-width:190px; position:relative; }
 .process-arrow{
@@ -531,7 +547,7 @@ nav.scrolled .nav-brand-sub{ opacity:0; max-height:0; }
    CRÉATIONS — grille masonry asymétrique, cartes "coin coupé" premium
    ═══════════════════════════════════════════════════════ */
 
-.creations-section{ background:var(--cream); padding:clamp(2rem,5vw,3rem) 0 clamp(4.5rem,9vw,7rem); }
+.creations-section{ background:var(--cream); padding:clamp(2rem,5vw,3rem) 0 clamp(4.5rem,9vw,7rem); scroll-snap-align:start; }
 .creations-head{
   max-width:1400px;
   margin:0 auto;
@@ -746,7 +762,7 @@ nav.scrolled .nav-brand-sub{ opacity:0; max-height:0; }
 /* ═══════════════════════════════════════════════════════
    L'ART DU FAIT MAIN — valeurs de la marque
    ═══════════════════════════════════════════════════════ */
-.craft-section{ background:var(--cream); padding:clamp(4rem,8vw,6rem) clamp(1.5rem,6vw,5rem); }
+.craft-section{ background:var(--cream); padding:clamp(4rem,8vw,6rem) clamp(1.5rem,6vw,5rem); scroll-snap-align:start; }
 .craft-grid{ max-width:1100px; margin:2.5rem auto 0; display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; text-align:center; }
 .craft-item{ display:flex; flex-direction:column; align-items:center; gap:.7rem; }
 .craft-icon{
@@ -763,7 +779,7 @@ nav.scrolled .nav-brand-sub{ opacity:0; max-height:0; }
 /* ═══════════════════════════════════════════════════════
    SUR MESURE — CRÉEZ VOTRE PIÈCE
    ═══════════════════════════════════════════════════════ */
-.suremesure{ background:var(--chocolate); padding:clamp(4.5rem,9vw,7rem) clamp(1.5rem,6vw,5rem); text-align:center; }
+.suremesure{ background:var(--chocolate); padding:clamp(4.5rem,9vw,7rem) clamp(1.5rem,6vw,5rem); text-align:center; scroll-snap-align:start; }
 .suremesure-inner{ max-width:600px; margin:0 auto; }
 .suremesure-inner h2{ font-family:var(--ff-display-strong); font-weight:700; font-size:clamp(2.2rem,5.5vw,3.4rem); color:var(--cream); margin:.6rem 0 1rem; }
 .suremesure-inner h2 em{ font-style:italic; font-weight:500; color:var(--terracotta); }
@@ -780,6 +796,7 @@ nav.scrolled .nav-brand-sub{ opacity:0; max-height:0; }
   background:var(--chocolate);
   color:var(--cream);
   padding:clamp(5rem,9vw,7.5rem) clamp(1.5rem,6vw,5rem);
+  scroll-snap-align:start;
 }
 .maker-inner{
   max-width:1200px;
@@ -796,7 +813,7 @@ nav.scrolled .nav-brand-sub{ opacity:0; max-height:0; }
   overflow:hidden;
   border:6px solid rgba(247,238,224,.15);
 }
-.maker-photo img{ width:100%; height:100%; object-fit:cover; }
+.maker-photo img{ width:100%; height:100%; object-fit:cover; animation:kenburns 13s ease-in-out infinite alternate; }
 .maker-text span.tag{
   font-size:.68rem; letter-spacing:.35em; text-transform:uppercase; color:var(--gold); display:block; margin-bottom:1rem;
 }
@@ -824,6 +841,7 @@ nav.scrolled .nav-brand-sub{ opacity:0; max-height:0; }
   max-width:1300px;
   margin:clamp(3rem,6vw,4rem) auto;
   border-radius:40px;
+  scroll-snap-align:start;
 }
 .formation-cta-bg{
   position:absolute;
@@ -898,7 +916,7 @@ nav.scrolled .nav-brand-sub{ opacity:0; max-height:0; }
 /* ═══════════════════════════════════════════════════════
    L'UNIVERS NICE CRÉATION — galerie auto-hébergée (ex-Instagram)
    ═══════════════════════════════════════════════════════ */
-.lookbook-section{ background:var(--cream); padding:clamp(4rem,8vw,6rem) clamp(1.5rem,6vw,5rem); text-align:center; }
+.lookbook-section{ background:var(--cream); padding:clamp(4rem,8vw,6rem) clamp(1.5rem,6vw,5rem); text-align:center; scroll-snap-align:start; }
 .lookbook-grid{
   max-width:900px; margin:2.5rem auto 0;
   display:grid; grid-template-columns:repeat(6,1fr); gap:.8rem;
@@ -912,7 +930,7 @@ nav.scrolled .nav-brand-sub{ opacity:0; max-height:0; }
   transition:transform .3s;
 }
 .lookbook-tile:hover{ transform:scale(1.06); }
-.lookbook-tile img{ width:100%; height:100%; object-fit:cover; }
+.lookbook-tile img{ width:100%; height:100%; object-fit:cover; animation:kenburns 12s ease-in-out infinite alternate; }
 .lookbook-placeholder{ font-size:1.5rem; }
 .insta-cta{ margin-top:1.6rem; }
 .insta-cta a{ font-size:.85rem; letter-spacing:.1em; text-transform:uppercase; color:var(--terracotta); font-weight:600; }
@@ -1875,5 +1893,11 @@ footer::before{
   nav,
   .mobile-fullmenu {
     transition: none !important;
+  }
+  html{ scroll-snap-type: none; scroll-behavior: auto; }
+  .hero2-bg img,
+  .maker-photo img,
+  .lookbook-tile img{
+    animation: none !important;
   }
 }

@@ -28,19 +28,31 @@ const IconWhatsapp = () => (
   </svg>
 );
 
+// URL d'action fournie par Brevo (Contacts → Formulaires → code
+// d'intégration HTML). À ne changer que si vous recréez le formulaire
+// côté Brevo — l'URL contient l'identifiant unique du formulaire.
+const BREVO_FORM_ACTION = "https://cb3c2537.sibforms.com/serve/MUIFAILc5YDzuiJXax9Xp1WaFf8Z58cAiowu93TE8ngAjkV-FhiT0tUwzQcIR7K2bwuaVo3TCI_kD_yj_8FEaELooYkczV6DBa0nGp43wQ2mPe-ml242k3iLa9RwBgszIreDS5C4mtGEDz-3PWVX6EO6PN8kkTyx0JH5rfskJ8wP9HQuXh5ODceHEitHpvemzxP3eJaqvhtPEXXGOA==";
+
 export function FooterFull({ goTo }) {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
-  // Pas de backend d'inscription branché ici : la confirmation est
-  // uniquement visuelle. Pour une vraie liste de diffusion, il faudra
-  // relier ce formulaire à un service (Mailchimp, Brevo, etc.) ou à
-  // ton propre backend.
-  const handleNewsletterSubmit = (e) => {
-    e.preventDefault();
-    if (!email.trim()) return;
-    setSubscribed(true);
-    setEmail('');
+  // Le formulaire envoie un vrai POST vers Brevo (action + method ci-
+  // dessous), ce qui ajoute réellement le contact à la liste. Pour
+  // éviter de faire quitter le site (comportement par défaut d'un
+  // POST classique, qui ouvrirait la page de confirmation de Brevo),
+  // la soumission est redirigée dans un iframe invisible via
+  // target="newsletter-frame" (voir plus bas dans le JSX).
+  // On ne peut pas lire la réponse de cet iframe (domaine différent),
+  // donc on affiche notre propre message de remerciement juste après
+  // l'envoi plutôt que d'attendre une confirmation de Brevo — la
+  // validation du format email par le navigateur (type="email" +
+  // required) suffit à filtrer les saisies invalides avant l'envoi.
+  const handleNewsletterSubmit = () => {
+    setTimeout(() => {
+      setSubscribed(true);
+      setEmail('');
+    }, 400);
   };
 
   return (
@@ -89,17 +101,46 @@ export function FooterFull({ goTo }) {
           {subscribed ? (
             <p className="footer-newsletter-thanks">Merci, à très vite ! 🧶</p>
           ) : (
-            <form onSubmit={handleNewsletterSubmit}>
+            <form
+              action={BREVO_FORM_ACTION}
+              method="POST"
+              target="newsletter-frame"
+              onSubmit={handleNewsletterSubmit}
+            >
               <input
                 type="email"
+                name="EMAIL"
                 placeholder="Votre e-mail"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
               <button type="submit">→</button>
+
+              {/* Champs requis par Brevo — à garder tels quels :
+                  email_address_check est un piège à robots (doit
+                  rester vide et invisible), locale force la langue
+                  des emails de confirmation. */}
+              <input
+                type="text"
+                name="email_address_check"
+                defaultValue=""
+                style={{ display: 'none' }}
+                tabIndex="-1"
+                autoComplete="off"
+              />
+              <input type="hidden" name="locale" value="fr" />
             </form>
           )}
+
+          {/* Cible invisible du formulaire : reçoit la réponse de
+              Brevo (page de confirmation) sans faire quitter le site. */}
+          <iframe
+            name="newsletter-frame"
+            title="Confirmation inscription newsletter"
+            style={{ display: 'none' }}
+            aria-hidden="true"
+          />
         </div>
       </div>
 
